@@ -783,10 +783,8 @@ function ParseArchAudit() {
         fi
         #
         #
-        ### Note1, the advisory counts,(*AdvisCount,) are handled entirely within one pass of this shell.
-        ### Note2, all counters were initialised in the variable section
+        ### Note, the advisory counts,(*AdvisCount,) are handled entirely within one pass of this shell.
         AdvisCount=$((AdvisCount + 1))                  # Increment the count of advisories
-        PckgRecord=":$PckgName:"                        # added to PckgList
         case $PckgRisk in                               # Assign $RskClr, PckgRsk, SortRisk and increment relevant count
                  " Low risk!")
                         RskClr=$LowRsk
