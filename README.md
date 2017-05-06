@@ -2,8 +2,8 @@
 **License:** GPLv3
 
 **Dependencies:**
-1. arch-audit (community)
-2. whoneeds (pkgtools AUR  https://aur.archlinux.org/packages/pkgtools/)
+* arch-audit (community)
+* whoneeds (pkgtools AUR  https://aur.archlinux.org/packages/pkgtools/)
 
 ### What is it?
 Okay, being honest,  this utility is more informative than practical. However, **it is very informative!**
@@ -36,7 +36,7 @@ What you should really be paying attention to is: **“How quickly are they fixe
 
 
 # Installation:
-Once I get some feedback, I will put it in the AUR. Until then, installation is a matter of personal choice. This post on the Arch f⋅⋅orums discusses various installation options for bash shells: https://bbs.archlinux.org/viewtopic.php?id=165042
+Once I get some feedback, I will put it in the AUR. Until then, installation is a matter of personal choice. This post on the Arch forums discusses various installation options for bash shells: https://bbs.archlinux.org/viewtopic.php?id=165042
 
 You should note that the choice of installation directory may be limited by your security model. For example, without fiddling, neither Grsecurity, nor Firejail with Apparmor enabled allow you to run executables from your home directory.
  
