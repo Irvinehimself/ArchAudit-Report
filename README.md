@@ -19,8 +19,8 @@ Written in bash, ‘archaudit-report’ parses the raw output from ‘arch-audit
 4. A summary report detailing:
       * The number of advisories affecting your system
       * A breakdown of this count for different risk levels
-      * The total number of top level packages affected by the advisories
-      * A similar breakdown as above, detailing the number of packages affected at each risk level.
+      * The total number of top level applications affected by the advisories
+      * A similar breakdown as above, detailing the number of applications affected at each risk level.
       * A ranked summary of the advisories, sorted by level of risk then number of affected applications
       * A ranked summary of affected applications sorted by risk
 	
