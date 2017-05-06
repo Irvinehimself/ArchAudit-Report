@@ -1,0 +1,940 @@
+#!/bin/bash
+
+###############################################
+# Copyright (C) 2017  Irvine McMinn (irvine mcminn at gmail dot com)
+#
+# A tool to produce a report of how the top level applications are
+# affected by vulnerabilities reported by arch-audit. The project home
+# page can be found at https://github.com/Irvinehimself/ArchAudit-Report
+#
+# ArchAudit-Report is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# ArchAudit-Report is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with ArchAudit-Report.  If not, see <http://www.gnu.org/licenses/>.
+###############################################
+
+
+
+### ### ### Dependencies ### ### ###
+
+### arch-audit (community)
+### whoneeds (pkgtools AUR  https://aur.archlinux.org/packages/pkgtools/)
+
+# Note: I could use 'pactree -r pckg' instead of 'whoneeds', but 'whoneeds'
+# gives a much cleaner, more easily customised output. More specifically,
+# 'pactree' gives a great visual representation of the dependency tree,
+# (I use it myself,) but, for report building, using 'whoneeds' means cleaner
+# code.
+
+### ### ### End Dependencies ### ### ###
+
+
+### ### ### ### ### ### ### Start Constants ### ### ### ### ### ### ###
+
+### ### Links
+ArchSecurity="https://security.archlinux.org/"
+PckgIssue="https://security.archlinux.org/package/"
+GnuLicence="http://www.gnu.org/licenses/"
+
+
+### ### Paths and tmp file names
+PathToTemp="/tmp/"
+
+### Records
+PckgListFile="$PathToTemp""PckgListTmp.txt" ### Package Format = ':PckgName:RskClr:PckgRsk:SortRisk:DepCount'
+AppListFile="$PathToTemp""AppListTmp.txt"           ### Apps with inherited advisories. Format ':AppNme:C:H:M:L:U'
+
+### ### Counters
+AdvisCountFile="$PathToTemp""AdvisCountTmp.txt"
+CrtclAdvisCountFile="$PathToTemp""CrtclAdvisCountTmp.txt"
+HighAdvisCountFile="$PathToTemp""HighAdvisCountTmp.txt"
+MediumAdvisCountFile="$PathToTemp""MediumAdvisCountTmp.txt"
+LowAdvisCountFile="$PathToTemp""LowAdvisCountTmp.txt"
+UndefAdvisCountFile="$PathToTemp""UndefAdvisCountTmp.txt"
+
+AppCountFile="$PathToTemp""AppCountTmp.txt"
+CrtclAppCountGFile="$PathToTemp""CrtclAppCountGTmp.txt"
+CrtclAppCountNFile="$PathToTemp""CrtclAppCountNTmp.txt"
+HighAppCountGFile="$PathToTemp""HighAppCountGTmp.txt"
+HighAppCountNFile="$PathToTemp""HighAppCountNTmp.txt"
+MediumAppCountGFile="$PathToTemp""MediumAppCountGTmp.txt"
+MediumAppCountNFile="$PathToTemp""MediumAppCountNTmp.txt"
+LowAppCountGFile="$PathToTemp""LowAppCountGTmp.txt"
+LowAppCountNFile="$PathToTemp""LowAppCountNTmp.txt"
+UndefAppCountGFile="$PathToTemp""UndefAppCountGTmp.txt"
+UndefAppCountNFile="$PathToTemp""UndefAppCountNTmp.txt"
+
+CrtclAppListFile="$PathToTemp""CrtclAppListTmp.txt"
+HighAppListFile="$PathToTemp""HighAppListTmp.txt"
+MediumAppListFile="$PathToTemp""MediumAppListTmp.txt"
+LowAppListFile="$PathToTemp""LowAppListTmp.txt"
+UndefAppListFile="$PathToTemp""UndefAppListTmp.txt"
+
+### ### End Paths and tmp file names
+
+### ### Text colour definitions
+# (For an expansive colour chart see http://misc.flogisoft.com/bash/tip_colors_and_formatting)
+PkgClr="\e[01;32m"          # green
+DefClr="\e[0m"              # Default white colour
+LowRsk="\e[38;5;148m"       # green yellow
+MedRsk="\e[38;5;11m"        # light yellow
+HighRsk="\e[38;5;208m"      # orange red
+CrtclRsk="\e[01;31m"        # red
+UnDefRsk="\e[38;5;218m"     # light pink
+HypLnk="\e[01;36m"          # light cyan
+NoteClr="\e[38;5;81m"      # pale blue
+AppClr="\e[38;5;104m"       # light mauve
+
+### ### Pre-highlighted text and notices
+Warning=$CrtclRsk"Warning:"$DefClr
+Note=$NoteClr"Note:"$DefClr
+Note1=$NoteClr"Note1:"$DefClr
+Note2=$NoteClr"Note2:"$DefClr
+
+### ### ### ### ### ### ### End Constants ### ### ### ### ### ###
+
+
+
+### ### ### ### ### ### ### Start Functions ### ### ### ### ### ### ###
+
+### ### ### ###  Prettification functions ### ### ### ###
+
+### ### ### Lines, Boxes and Tables ### ### ###
+
+function DrawLine() {
+    ### see https://stackoverflow.com/questions/5799303/print-a-character-repeatedly-in-bash
+    # Note, extended charset seems to be of different length?
+    DrawLength="$1"
+    DrawChar="$2"
+    if [[ "$DrawLength" == "" ]] ; then
+        DrawLength="120"
+    fi
+    if [[ "$DrawChar" == "" ]] ; then
+        DrawChar="*"
+    fi
+    DrwLne=$(printf "%-$DrawLength""s" "$DrawChar")
+    echo "${DrwLne// /$DrawChar}"
+}
+
+function MakeTitleBox() {
+    echo
+    #MakeTitleBox "15" "67" "WhoNeeds report"
+    UnderLine=$(DrawLine "$1" "*")
+    printf '\e[1m'
+    printf "%$2s\n" "$UnderLine"
+    printf "%$2s\n" "$3"
+    printf "%$2s" "$UnderLine"
+    printf '\e[0m\n'
+    #echo
+}
+
+function PrintBoxLine() {
+    printf "$DefClr"
+    printf "─"
+}
+
+function PrintBoxEdge() {
+    printf "$DefClr"
+    printf "│"
+}
+
+function PrintLeftTopCorn() {
+    printf "$DefClr"
+    printf "┌"
+}
+
+function PrintRghtTopCorn() {
+    printf "$DefClr"
+    printf "┐"
+}
+
+function PrintLeftBtmCorn() {
+    printf "$DefClr"
+    printf "└"
+}
+
+function PrintRghtBtmCorn() {
+    printf "$DefClr"
+    printf "┘"
+}
+
+function PrintLeftJunction() {
+    printf "$DefClr"
+    printf "├"
+}
+
+function PrintRghtJunction() {
+    printf "$DefClr"
+    printf "┤"
+}
+
+function PrintTopJunction() {
+    printf "$DefClr"
+    printf "┬"
+}
+
+function PrintBtmJunction() {
+    printf "$DefClr"
+    printf "┴"
+}
+
+function PrintCrssJunction() {
+    printf "$DefClr"
+    printf "┼"
+}
+
+### ### ### End  Lines, Boxes and Tables ### ### ###
+
+
+### ### ### Titles and Notes ### ### ###
+
+function TitleDate() {
+    UnderLine=$(DrawLine "57" "*")
+    echo
+    echo
+    MakeTitleBox "57" "90" "ArchAudit WhoNeeds Report:   $(date)"
+    printf '\e[1m%-20s\n' "Raw arch-audit results:"
+    printf '\e[0m\n'
+    arch-audit | fold -w 120 - # no -s option forces break at 120 char, (as oppose to breaking at nearest space)
+    echo
+}
+
+function Information() {
+    ###
+    WarnString="This utility is meant to give an overview of which applications are affected by Arch Linux security advisories. It is not meant to be a measure of how secure a system is. To measure the overall level of system hardness, use Lynis or some other security auditing tool."
+    ###
+    NoteString="Particularly when exporting to a text editor, for the pretty columns to line up, you need to set the preferred font to Monospace. In the same vein, I expect the terminal to have a column width of at least 120 characters."
+    ###
+    GPLString="This software is distributed under the GPL v3 license in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details: $HypLnk$GnuLicence$DefClr"
+    ###
+    echo
+    echo -e "$Warning"
+    echo -e "$WarnString" | fold -sw 120 -
+    echo
+    echo -e "$Note1"
+    echo -e "$NoteString" | fold -sw 120 -
+    echo
+    echo -e "$Note2"
+    echo -e "$GPLString" | fold -sw 120 -
+}
+
+### ### ### End Titles and Notes ### ### ###
+
+
+### ### ### Get, Save and Remove Files ### ### ###
+
+function GetTrueAppCounts() {
+    AppCount=$(cat "$AppCountFile")
+    CrtclAppCountG=$(cat "$CrtclAppCountGFile")
+    CrtclAppCountN=$(cat "$CrtclAppCountNFile")
+    HighAppCountG=$(cat "$HighAppCountGFile")
+    HighAppCountN=$(cat "$HighAppCountNFile")
+    MediumAppCountG=$(cat "$MediumAppCountGFile")
+    MediumAppCountN=$(cat "$MediumAppCountNFile")
+    LowAppCountG=$(cat "$LowAppCountGFile")
+    LowAppCountN=$(cat "$LowAppCountNFile")
+    UndefAppCountG=$(cat "$UndefAppCountGFile")
+    UndefAppCountN=$(cat "$UndefAppCountNFile")
+}
+
+function SaveTrueAppCounts() {
+    echo "$AppCount" > "$AppCountFile"
+    echo "$CrtclAppCountG" > "$CrtclAppCountGFile"
+    echo "$CrtclAppCountN" > "$CrtclAppCountNFile"
+    echo "$HighAppCountG" > "$HighAppCountGFile"
+    echo "$HighAppCountN" > "$HighAppCountNFile"
+    echo "$MediumAppCountG" > "$MediumAppCountGFile"
+    echo "$MediumAppCountN" > "$MediumAppCountNFile"
+    echo "$LowAppCountG" > "$LowAppCountGFile"
+    echo "$LowAppCountN" > "$LowAppCountNFile"
+    echo "$UndefAppCountG" > "$UndefAppCountGFile"
+    echo "$UndefAppCountN" > "$UndefAppCountNFile"
+}
+
+function GetTrueAdvisCount() {
+    AdvisCount=$(cat "$AdvisCountFile")
+    CrtclAdvisCount=$(cat "$CrtclAdvisCountFile")
+    HighAdvisCount=$(cat "$HighAdvisCountFile")
+    MediumAdvisCount=$(cat "$MediumAdvisCountFile")
+    LowAdvisCount=$(cat "$LowAdvisCountFile")
+    UndefAdvisCount=$(cat "$UndefAdvisCountFile")
+}
+
+function SaveTrueAdvisCount() {
+    echo    "$AdvisCount" > "$AdvisCountFile"     # Preserve the values for outside pipe sub-shell
+    echo "$CrtclAdvisCount" > "$CrtclAdvisCountFile"
+    echo     "$HighAdvisCount" > "$HighAdvisCountFile"
+    echo   "$MediumAdvisCount" > "$MediumAdvisCountFile"
+    echo    "$LowAdvisCount" > "$LowAdvisCountFile"
+    echo    "$UndefAdvisCount" > "$UndefAdvisCountFile"
+}
+
+function RemoveTemporaryFiles() {
+    rm "$AdvisCountFile"
+    rm "$CrtclAdvisCountFile"
+    rm "$HighAdvisCountFile"
+    rm "$MediumAdvisCountFile"
+    rm "$LowAdvisCountFile"
+    rm "$UndefAdvisCountFile"
+    rm "$AppCountFile"
+    rm "$CrtclAppCountGFile"
+    rm "$CrtclAppCountNFile"
+    rm "$HighAppCountGFile"
+    rm "$HighAppCountNFile"
+    rm "$MediumAppCountGFile"
+    rm "$MediumAppCountNFile"
+    rm "$LowAppCountGFile"
+    rm "$LowAppCountNFile"
+    rm "$UndefAppCountGFile"
+    rm "$UndefAppCountNFile"
+    rm "$AppListFile"
+    if [ -a "$CrtclAppListFile" ] ; then
+        rm "$CrtclAppListFile"
+    fi
+    if [ -a "$HighAppListFile" ] ; then
+        rm "$HighAppListFile"
+    fi
+    if [ -a "$MediumAppListFile" ] ; then
+        rm "$MediumAppListFile"
+    fi
+    if [ -a "$LowAppListFile" ] ; then
+        rm "$LowAppListFile"
+    fi
+    if [ -a "$UndefAppListFile" ] ; then
+        rm "$UndefAppListFile"
+    fi
+    rm "$PckgListFile"
+}
+
+### ### ### End Get, Save and Remove Files ### ### ###
+
+
+
+### ### ### ### ### ### Report Summary ### ### ### ### ### ###
+
+### ### ### PckgList Stuff ### ### ###
+
+function DrawPckgListTableHeader() {
+    BoxLine1=$(DrawLine "30" "─")
+    BoxLine2=$(DrawLine "15" "─")
+    BoxLine3=$(DrawLine "6" "─")
+    BoxLine4=$(DrawLine "70" "─")
+    echo "Here is a ranked list of the advisories that concern you:"
+    ### Top box outline
+    printf " "
+    PrintLeftTopCorn
+    printf "$BoxLine1"
+    PrintTopJunction
+    printf "$BoxLine2"
+    PrintTopJunction
+    printf "$BoxLine3"
+    PrintTopJunction
+    printf "$BoxLine4"
+    PrintRghtTopCorn
+    printf '%s\n'
+    ### Text line
+    printf " "
+    PrintBoxEdge
+    printf '%-28s' " Package"
+    PrintBoxEdge
+    printf '%-5s'
+    printf '%-8s' "Risk"
+    PrintBoxEdge
+    printf '%-4s' "Hits"
+    PrintBoxEdge
+    printf '%-18s'
+    printf '%-50s' "Advisory"
+    PrintBoxEdge
+    printf '%s\n'
+    ###  Bottom box outline
+    printf " "
+    PrintLeftJunction
+    printf "$BoxLine1"
+    PrintBtmJunction
+    printf "$BoxLine2"
+    PrintBtmJunction
+    printf "$BoxLine3"
+    PrintBtmJunction
+    printf "$BoxLine4"
+    PrintRghtJunction
+    printf '%s\n'
+}
+
+function DrawPckgListTableFooter(){
+    BoxLine=$(DrawLine "118" "─")
+    ### Top outline
+    printf " "
+    PrintLeftJunction
+    printf "$BoxLine"
+    PrintRghtJunction
+    printf '%s\n'
+    ### Text line
+    Advis="advisory"
+    printf " "
+    PrintBoxEdge
+    printf '%-60s' " Full details on all Arch Linux advisories can be found at:"
+    printf "$HypLnk"
+    printf '%-56s' "$ArchSecurity$Advis"
+    PrintBoxEdge
+    printf '%s\n'
+    ### Bottom box outline
+    printf " "
+    PrintLeftBtmCorn
+    printf "$BoxLine"
+    PrintRghtBtmCorn
+    printf '%s\n'
+}
+
+function GetPckgList() {
+    echo
+    DrawPckgListTableHeader
+    ### PckgRecord consists of the fields ':PckgName:RiskClr:PckgRsk:SortRisk:PckgAppcount'
+    ### Note: The 1st field is empty. Other records in this bash use the empty field trick to wrap the package name in
+    ### double colons. This is to avoid confusing 'Doe' with 'Jane-Doe'/'John-Doe'. Technical, (with this particular
+    ### record,) that consideration is not a problem. But, by adopting the convention bash wide, it greatly simplifies
+    ### understanding the code and leaves room for future development
+    ###
+    ### 'sort -t: -nr -k5,5 -k6,6  "$PckgListFile" ' will sort the file by the 5th, '-k5' and 6th '-k6' field.
+    ### The option '-t:' signifies that ':' is to be the field  separator.
+    sort -t: -nr -k5,5 -k6,6 "$PckgListFile" |\
+    while read -r PckgRecord; do
+        ### Note the 4th field, SortRisk, is only for numeric sorting.
+        PckgName="$(echo $PckgRecord | cut -d':' -f2)"  # Isolate the 1st non empty field
+         RiskClr="$(echo $PckgRecord | cut -d':' -f3)"  # Isolate the 2nd non empty  field
+         PckgRsk="$(echo $PckgRecord | cut -d':' -f4)"  # Isolate the 3rd non empty  field
+                                                        ### Note the 5th field is used purely for numeric sorting
+        AppCount="$(echo $PckgRecord | cut -d':' -f6)"  # Isolate the 5th non empty  field
+        #
+        printf " "; PrintBoxEdge;
+        printf "$PkgClr"
+        printf '%-28s' " $PckgName"
+        printf "$RiskClr"
+        printf '%15s' "$PckgRsk"
+        printf "$DefClr"
+        printf '%4s' "$AppCount"
+        printf "$HypLnk"
+        printf '%-69s' " $PckgIssue$PckgName"
+        PrintBoxEdge; printf '%s\n'
+    done
+    DrawPckgListTableFooter
+    echo -e "$DefClr" # Restore default colour and create line break
+}
+
+### ### ###  End PckgList Stuff ### ### ###
+
+
+### ### ###  AppList stuff ### ### ###
+
+function DrawAppListTableHeader() {
+    BoxLine=$(DrawLine "59" "─")
+    echo "Finally, here is a ranked list of affected applications:"
+    ### Top box outline
+    printf " "
+    PrintLeftTopCorn
+    printf "$BoxLine"
+    PrintTopJunction
+    printf "$BoxLine"
+    PrintRghtTopCorn
+    printf '%s\n'
+    ### Text line
+    printf " "
+    PrintBoxEdge
+    printf '%-45s' " Application"
+    printf '%-12s' "Risk Tally"
+    PrintBoxEdge
+    printf '%-45s' " Application"
+    printf '%-12s' "Risk Tally"
+    PrintBoxEdge
+    printf '%s\n'
+    ### Bottom box outline
+    printf " "
+    PrintLeftJunction
+    printf "$BoxLine"
+    PrintCrssJunction
+    printf "$BoxLine"
+    PrintRghtJunction
+    printf '%s\n'
+}
+
+function DrawAppListTableFooter(){
+    BoxLine=$(DrawLine "59" "─")
+    ### Botom box line
+    printf " "
+    PrintLeftBtmCorn
+    printf "$BoxLine"
+    PrintBtmJunction
+    printf "$BoxLine"
+    PrintRghtBtmCorn
+    printf '%s\n'
+}
+
+function AppListPrintF() {
+    PrintBoxEdge
+    printf "$AppClr"
+    printf '%-42s' " $AppNme"
+    printf "$CrtclRsk"
+    printf '%3s' "$AppFC"
+    printf "$HighRsk"
+    printf '%3s' "$AppFH"
+    printf "$MedRsk"
+    printf '%3s' "$AppFM"
+    printf "$LowRsk"
+    printf '%3s' "$AppFL"
+    printf "$UnDefRsk"
+    printf '%3s' "$AppFU"
+}
+
+function GetApplist() {
+    echo
+    DrawAppListTableHeader
+    ### Record field is ':AppName:C:H:M:L:U'
+    ### Note: To avoid confusing AppNames like: 'git', 'jstest-gtk-git' and 'sdl2-jstest-git'. we
+    ### need to make the first field empty. That way, we can fully encapsulate '$Appname' in colons
+    ### and thus eliminate false positives, (touch wood.)
+    sort -t: -nr -k2,2 -k3,3 -k4,4 -k5,5 -k6,6 "$AppListFile" |\
+    ( # Open pipe
+    Column="1"
+    while read -r AppListRecord; do
+        AppNme="$(echo $AppListRecord | cut -d':' -f2) "  # Isolate the 1st field
+         AppFC="$(echo $AppListRecord | cut -d':' -f3) "  # Isolate the 2nd field
+         AppFH="$(echo $AppListRecord | cut -d':' -f4) "  # Isolate the 3rd field
+         AppFM="$(echo $AppListRecord | cut -d':' -f5) "  # Isolate the 4th field
+         AppFL="$(echo $AppListRecord | cut -d':' -f6) "  # Isolate the 5th field
+         AppFU="$(echo $AppListRecord | cut -d':' -f7) "  # Isolate the 6th field
+        ###
+        if [[ "$Column" == "1" ]] ; then
+                Column=$((Column + 1))
+                printf " "
+                AppListPrintF
+            else
+                    Column="1"
+                    AppListPrintF
+                    PrintBoxEdge
+                    printf '%s\n'
+        fi
+    done
+    if [[ "$Column" == "2" ]] ; then    # If the last row is incomplete, we need to finsh the row
+        PrintBoxEdge
+        printf '%57s'
+        PrintBoxEdge
+        printf '%s\n'
+    fi
+    DrawAppListTableFooter
+    ) # Close pipe
+}
+
+### ### ###  End AppList stuff ### ### ###
+
+
+### ### ###  AdvsList stuff ### ### ###
+
+function AdvsTableIndent() {
+    printf '%42s'
+}
+
+function AdvsTableHeader(){
+    BoxLine1=$(DrawLine "23" "─")
+    BoxLine2=$(DrawLine "14" "─")
+    BoxLine3=$(DrawLine "6" "─")
+    BoxLine4=$(DrawLine "18" "─")
+    BoxLine5=$(DrawLine "8" "─")
+    BoxLine6=$(DrawLine "7" "─")
+    ### Top box line
+    AdvsTableIndent
+    PrintLeftTopCorn
+    printf "$BoxLine1"
+    PrintTopJunction
+    printf "$BoxLine2"
+    PrintRghtTopCorn
+    printf '%s\n'
+    ### Top header line
+    AdvsTableIndent
+    PrintBoxEdge
+    printf '%5s'
+    printf '%-16s' "Advisories"
+    PrintBoxEdge
+    printf "Apllications"
+    PrintBoxEdge
+    printf '%s\n'
+    ### Middle box line
+    AdvsTableIndent
+    PrintLeftJunction
+    printf "$BoxLine3"
+    PrintTopJunction
+    printf "$BoxLine4"
+    PrintCrssJunction
+    printf "$BoxLine5"
+    PrintTopJunction
+    printf "$BoxLine6"
+    PrintRghtJunction
+    printf '%s\n'
+    ### Bottom header line
+    AdvsTableIndent
+    PrintBoxEdge
+    printf '%4s' "Hits"
+    PrintBoxEdge
+    printf '%6s'
+    printf '%-10s' "Risk"
+    PrintBoxEdge
+    printf '%1s'
+    printf '%-5s' "Net"
+    PrintBoxEdge
+    printf "Gross"
+    PrintBoxEdge
+    printf '%s\n'
+    ### Bottom box line
+    AdvsTableIndent
+    PrintLeftJunction
+    printf "$BoxLine3"
+    PrintBtmJunction
+    printf "$BoxLine4"
+    PrintBtmJunction
+    printf "$BoxLine5"
+    PrintBtmJunction
+    printf "$BoxLine6"
+    PrintRghtJunction
+    printf '%s\n'
+
+}
+
+function AdvsTableFooter(){
+    BoxLine=$(DrawLine "36" "─")
+    AdvsTableIndent
+    PrintLeftBtmCorn
+    printf "$BoxLine"
+    PrintRghtBtmCorn
+    printf '%s\n'
+}
+
+function AdvsPrintF() {
+    AdvsTableIndent
+    PrintBoxEdge
+    printf '%-4s' " $1"         # Advisory count
+    printf "$2"                 # Risk colour
+    printf '%16s' "$3"          # Risk string/label
+    printf "$DefClr"
+    printf '%7s' "$4 "           # Net AppCount
+    printf '%7s' "$5 "          # Gross Appcount
+    PrintBoxEdge
+    printf '%s\n'
+}
+
+function GetAdvsList(){
+    echo
+    echo -e "There were $AdvisCount relevant advisories affecting a net count of $AppCount applications:"
+    AdvsTableHeader
+    ### Critical ###
+    AdvsPrintF "$CrtclAdvisCount" "$CrtclRsk" "Critical Risk!" "$CrtclAppCountN" "$CrtclAppCountG"
+    ### High ###
+    AdvsPrintF "$HighAdvisCount" "$HighRsk" "High Risk!" "$HighAppCountN" "$HighAppCountG"
+    ### Medium ###
+    AdvsPrintF "$MediumAdvisCount" "$MedRsk" "Medium Risk!" "$MediumAppCountN" "$MediumAppCountG"
+    ### Low ###
+    AdvsPrintF "$LowAdvisCount" "$LowRsk" "Low Risk!" "$LowAppCountN" "$LowAppCountG"
+    ### Undefined ###
+    AdvsPrintF "$UndefAdvisCount" "$UnDefRsk" " Undefined Risk!" "$UndefAppCountN" "$UndefAppCountG"
+    ### ### ###
+    AdvsTableFooter
+    #echo
+    #
+    printf "$NoteClr\e[1m%34s" "Note on gross and net counts:"
+    printf '\e[0m%76s\n' " Applications have multiple dependencies. If an applications has two or more"
+    printf '%111s\n' "dependencies with advisories, double counting inflates the count of affected applications. The gross count"
+    printf '%111s\n' "represents how applications are affected by multiple advisories and thus double-counts. The net count does"
+    printf '%9s\n' "not."
+    ###
+    echo
+}
+
+### ### ### End AdvsList stuff ### ### ###
+
+function ReportSummary() {
+    # Recover values from sub-shell pipes
+    GetTrueAdvisCount
+    GetTrueAppCounts
+    # Commence report summary
+    MakeTitleBox "7" "60" "Summary"
+    GetAdvsList
+    GetPckgList
+    GetApplist
+    MakeTitleBox "10" "65" "End Report"
+    # Clean up temporary files
+    RemoveTemporaryFiles
+}
+
+### ### ### ### ### ### End Report Summary ### ### ### ### ### ###
+
+
+
+### ### ### ### ### ### Parser functions ### ### ### ### ### ###
+
+function InialiseCounters() {
+    ###
+    AdvisCount="0"
+    CrtclAdvisCount="0"
+    HighAdvisCount="0"
+    MediumAdvisCount="0"
+    LowAdvisCount="0"
+    UndefAdvisCount="0"
+    ###
+    AppCount="0"
+    echo "$AppCount" > "$AppCountFile"
+    CrtclAppCountG="0"
+    echo "$CrtclAppCountG" > "$CrtclAppCountGFile"
+    CrtclAppCountN="0"
+    echo "$CrtclAppCountN" > "$CrtclAppCountNFile"
+    HighAppCountG="0"
+    echo "$HighAppCountG" > "$HighAppCountGFile"
+    HighAppCountN="0"
+    echo "$HighAppCountN" > "$HighAppCountNFile"
+    MediumAppCountG="0"
+    echo "$MediumAppCountG" > "$MediumAppCountGFile"
+    MediumAppCountN="0"
+    echo "$MediumAppCountN" > "$MediumAppCountNFile"
+    LowAppCountG="0"
+    echo "$LowAppCountG" > "$LowAppCountGFile"
+    LowAppCountN="0"
+    echo "$LowAppCountN" > "$LowAppCountNFile"
+    UndefAppCountG="0"
+    echo "$UndefAppCountG" > "$UndefAppCountGFile"
+    UndefAppCountN="0"
+echo "$UndefAppCountN" > "$UndefAppCountNFile"
+
+}
+
+function IncNetRiskcount() {
+    # Example input string ":$AppNme:" "$LowAppListFile" "$LowAppCountN"
+    App="$1"
+    ListFile="$2"
+    Ncount="$3"
+    if ! [ -a "$ListFile" ] ; then                      # Does net risk file exist?
+            echo "$App" > "$ListFile"                           # create file
+            Ncount=$((Ncount + 1))                              # increment net count
+        else if ! grep -q "$App" "$ListFile" ; then         # is App in File?
+                echo "$App" >>  "$ListFile"                         # append it to list
+                Ncount=$((Ncount + 1))                              # increment net count
+        fi
+    fi
+    echo "$Ncount"                                      # return result to subshell
+}
+
+function DrawParseAdvisoryTableHeader(){
+    BoxLine=$(DrawLine "117" "─")
+    ### Botom box line
+    printf " "
+    PrintLeftTopCorn
+    printf "$BoxLine"
+    PrintRghtTopCorn
+    printf '%s\n'
+}
+
+function DrawParseAdvisoryTableFooter(){
+    SentenceNoFormat=" The $1 advisory can be found at: $PckgIssue$1"
+    SentenceSize=${#SentenceNoFormat}
+    LineEnd=$((115-SentenceSize))
+    BoxLine=$(DrawLine "117" "─")
+    ### Top outline
+    printf " "
+    PrintLeftJunction
+    printf "$BoxLine"
+    PrintRghtJunction
+    printf '%s\n'
+    ### Text line
+    printf " "
+    PrintBoxEdge
+    printf " The "
+    printf "$PkgClr"
+    printf "$1 "
+    printf "$DefClr"
+    printf "advisory can be found at: "
+    printf "$HypLnk"
+    printf "$PckgIssue$1"
+    printf "%$LineEnd""s"
+    PrintBoxEdge
+    printf '%s\n'
+    ### Bottom box outline
+    printf " "
+    PrintLeftBtmCorn
+    printf "$BoxLine"
+    PrintRghtBtmCorn
+    printf '%s\n'
+}
+
+function ParseArchAudit() {
+    # arch-audit piped to while loop
+    arch-audit | \
+    ( # Because of the  pipe, we need a sub shell to preserve variables for processing outside while loop
+    while read PckgAdvisory; do
+        UpDateFlag=""                             # Will hold update string, if available
+        PckgName=${PckgAdvisory%" is affected by ["*}       # Chop string to isolate the package name
+        PckgName=${PckgName#"Package "*}
+        PckgRisk="$(echo $PckgAdvisory | cut -d'.' -f2)"    # For unknown reasons, ${string#"]. "*} didn't work?
+        if [[ "$PckgRisk" == *" Update to "* ]] ; then
+            UpDateFlag="$(echo $PckgRisk | cut -d'!' -f2)"  # Isolate update string. (No update = empty string.)
+            PckgRisk="$(echo $PckgRisk | cut -d'!' -f1)""!" # Remove update string, if it exists, from $PckgRisk
+        fi
+        #
+        #
+        ### Note1, the advisory counts,(*AdvisCount,) are handled entirely within one pass of this shell.
+        ### Note2, all counters were initialised in the variable section
+        AdvisCount=$((AdvisCount + 1))                  # Increment the count of advisories
+        PckgRecord=":$PckgName:"                        # added to PckgList
+        case $PckgRisk in                               # Assign $RskClr, PckgRsk, SortRisk and increment relevant count
+                 " Low risk!")
+                        RskClr=$LowRsk
+                        LowAdvisCount=$((LowAdvisCount + 1))
+                        AppRisk="Low"
+                        PckgRecord=":$PckgName:$RskClr:Low Risk!:2:";;    # See below for explanation PckgRecord of fields
+              " Medium risk!")
+                        RskClr=$MedRsk
+                        MediumAdvisCount=$((MediumAdvisCount + 1))
+                        AppRisk="Medium"
+                        PckgRecord=":$PckgName:$RskClr:Medium Risk!:3:";;
+                " High risk!")
+                        RskClr=$HighRsk
+                        HighAdvisCount=$((HighAdvisCount + 1))
+                        AppRisk="High"
+                        PckgRecord=":$PckgName:$RskClr:High Risk!:4:";;
+            " Critical risk!")
+                        RskClr=$CrtclRsk
+                        CrtclAdvisCount=$((CrtclAdvisCount + 1))
+                        AppRisk="Critical"
+                        PckgRecord=":$PckgName:$RskClr:Critical Risk!:5:";;
+                            *)
+                        RskClr=$UnDefRsk
+                        UndefAdvisCount=$((UndefAdvisCount + 1))
+                        AppRisk="UnDef"
+                        PckgRecord=":$PckgName:$RskClr:Undefined Risk!:1:";;
+        esac # End case statement
+        echo
+        echo -e "The following packages depend on $PkgClr$PckgName$DefClr, which is rated $RskClr$PckgRisk$DefClr $UpDateFlag"
+        whoneeds $PckgName | \
+            ( # Create second sub-shell to preserve variables for processing outside piped while loop
+            GetTrueAppCounts # From file
+            Column="0"
+            PckgAppcount="0"  #keeps count of number of applications affected by package cf AppCount
+            while read AppNme; do
+                if [[ "$AppNme" == *"Packages that depend on"* ]] ; then
+                        # We replaced whoneeds report intro. So, make pretty table header
+                        DrawParseAdvisoryTableHeader
+                    else
+                            PckgAppcount=$((PckgAppcount + 1))                # increments number of apps affected by package
+                            ### Check if AppListFile exists and that AppNme has a record
+                            if ! [ -a "$AppListFile" ] ; then                           # 'AppListFile' doesn't exist?
+                                    AppListRecord=":$AppNme:0:0:0:0:0"                      # Format = ':AppName:C:H:M:L:U'
+                                    AppCount=$((AppCount + 1))                              # Increment 'net' AppCount
+                                    echo "$AppListRecord" > "$AppListFile"                  # initialise "AppListFile"
+                                else if ! grep -q ":$AppNme:" "$AppListFile" ; then       # AppNme record doesn't exists?
+                                        AppListRecord=":$AppNme:0:0:0:0:0"                      # create field as above
+                                        AppCount=$((AppCount + 1))                              # Increment 'net' AppCount
+                                        echo "$AppListRecord" >> "$AppListFile"                 # append to "AppListFile"
+                                fi
+                            fi
+                            ### Above we have made sure AppListFile exists and Appnme has a record,now we need the fields
+                            AppListRecordOld=$(grep ":$AppNme:" "$AppListFile")             # get old AppNme record
+                            AppFC="$(echo $AppListRecordOld | cut -d':' -f3)"               # Isolate the 2nd field
+                            AppFH="$(echo $AppListRecordOld | cut -d':' -f4)"               # Isolate the 3rd field
+                            AppFM="$(echo $AppListRecordOld | cut -d':' -f5)"               # Isolate the 4th field
+                            AppFL="$(echo $AppListRecordOld | cut -d':' -f6)"               # Isolate the 5th field
+                            AppFU="$(echo $AppListRecordOld | cut -d':' -f7)"               # Isolate the 6th field
+                            ###
+                            case $AppRisk in    ### increment relevant count
+                                    "Low")
+                                        AppFL=$((AppFL + 1))                                # inc 'FL' field of 'AppListRecord'
+                                        LowAppCountG=$((LowAppCountG + 1))                  # increment gross count
+                                        LowAppCountN=$(IncNetRiskcount ":$AppNme:" "$LowAppListFile" "$LowAppCountN");;
+                                 "Medium")
+                                        AppFM=$((AppFM + 1))
+                                        MediumAppCountG=$((MediumAppCountG + 1))
+                                        MediumAppCountN=$(IncNetRiskcount ":$AppNme:" "$MediumAppListFile" "$MediumAppCountN");;
+                                   "High")
+                                        AppFH=$((AppFH + 1))
+                                        HighAppCountG=$((HighAppCountG + 1))
+                                        HighAppCountN=$(IncNetRiskcount ":$AppNme:" "$HighAppListFile" "$HighAppCountN");;
+                               "Critical")
+                                        AppFC=$((AppFC + 1))
+                                        CrtclAppCountG=$((CrtclAppCountG + 1))
+                                        CrtclAppCountN=$(IncNetRiskcount ":$AppNme:" "$CrtclAppListFile" "$CrtclAppCountN");;
+                                  "UnDef")
+                                        AppFU=$((AppFU + 1))
+                                        UndefAppCountG=$((UndefAppCountG + 1))
+                                        UndefAppCountN=$(IncNetRiskcount ":$AppNme:" "$UndefAppListFile" "$UndefAppCountN");;
+                            esac
+                            ### Update record in AppListFile
+                            AppListRecordNew=":$AppNme:$AppFC:$AppFH:$AppFM:$AppFL:$AppFU"
+                            sed -i "s/$AppListRecordOld/$AppListRecordNew/g" "$AppListFile"
+                            ###
+                            #
+                            ### Print out names of affected apps to stndout
+                            Column=$((Column + 1))
+                            if [[ "$Column" == "1" ]]; then
+                                    printf " "
+                                    PrintBoxEdge
+                                    printf "$AppClr%-39s" " $AppNme"
+                                else if [[ "$Column" == "2" ]]; then
+                                        printf "$AppClr%-38s" "$AppNme"
+                                    else
+                                            printf "$AppClr%-38s" "$AppNme"
+                                            PrintBoxEdge
+                                            printf '\n'
+                                            Column="0"
+                                fi
+                            fi
+                fi
+            done
+            if [[ "$Column" == "1" ]] ; then        # If the last row is incomplete, we need to finsh the row
+                    printf '%76s'
+                    PrintBoxEdge
+                    printf '%s\n'
+                else if [[ "$Column" == "2" ]] ; then
+                        printf '%38s'
+                        PrintBoxEdge
+                        printf '%s\n'
+                fi
+            fi
+            if [[ $PckgAppcount == "0" ]]; then     # Creates an empty table row when there is no affected applications
+                printf " "
+                PrintBoxEdge
+                printf "%115s"
+                PrintBoxEdge
+                printf '\n'
+
+            fi
+            # PckgRecord consists of the fields ':PckgName:RiskClr:PckgRsk:SortRisk:PckgAppcount'
+            PckgRecord="$PckgRecord""$PckgAppcount"
+            echo $PckgRecord >> "$PckgListFile"
+            #
+            SaveTrueAppCounts                       # Update the true *AppCounts while still inside second pipe
+            )                                       # Close the second pipe.
+        DrawParseAdvisoryTableFooter "$PckgName"
+        echo
+    done
+    SaveTrueAdvisCount                              # Preserve the values for outside pipe sub-shell
+    )                                               # close the first pipe
+}
+
+function StartWhoNeedsReport() {
+    MakeTitleBox "15" "67" "WhoNeeds Report"
+    ParseArchAudit
+}
+
+### ### ### ### ### ### ### ### ###  End functions ### ### ### ### ### ### ### ### ###
+
+
+
+### ### ### ### ### ### ### ### ### Main ### ### ### ### ### ### ### ### ###
+Information
+InialiseCounters
+TitleDate
+StartWhoNeedsReport
+ReportSummary
+echo
+### ### ### ### ### ### ### ### ###  End ### ### ### ### ### ### ### ### ###
