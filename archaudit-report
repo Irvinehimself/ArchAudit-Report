@@ -813,7 +813,7 @@ function ParseArchAudit() {
                         PckgRecord=":$PckgName:$RskClr:Undefined Risk!:1:";;
         esac # End case statement
         echo
-        echo -e "The following packages depend on $PkgClr$PckgName$DefClr, which is rated $RskClr$PckgRisk$DefClr $UpDateFlag"
+        echo -e "The following applications depend on $PkgClr$PckgName$DefClr, which is rated $RskClr$PckgRisk$DefClr $UpDateFlag"
         whoneeds $PckgName | \
             ( # Create second sub-shell to preserve variables for processing outside piped while loop
             GetTrueAppCounts # From file
