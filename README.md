@@ -5,7 +5,14 @@
 * arch-audit (community)
 * whoneeds (pkgtools AUR  https://aur.archlinux.org/packages/pkgtools/)
 
-### What is it?
+**Contents:**
+&nbsp;&nbsp;&nbsp;&nbsp;What is ArchAudit-Report?
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Features:
+&nbsp;&nbsp;&nbsp;&nbsp;Installation:
+&nbsp;&nbsp;&nbsp;&nbsp;Screenshots:
+
+<br><br>
+### What is ArchAudit-Report?
 Okay, being honest, this utility is more informative than practical. However, it is very informative!
 
 As you may know, ‘arch-audit’, is a tool which tells you which packages installed on your system have been issued security advisories, (see https://security.archlinux.org/). Unfortunately, the formatting of the arch-audit output is designed to facilitate piping to other auditing tools, (for example Lynis.) For a human, this raw output is neither informative, nor particularly readable.
@@ -27,7 +34,7 @@ Written in bash, ‘archaudit-report’ parses the raw output from ‘arch-audit
 **Notes:**
 This utility is meant to give an overview of which applications are affected by Arch Linux security advisories. It is not meant to be a measure of how secure a system is. To measure the overall level of system hardness, use Lynis or some other security auditing tool.
 
-Also, it is important to realise that trying to switch between applications in the hope of avoiding advisories is a fools errand. All it will achieve is a really bad migraine! What you should really be paying attention to is: *“How quickly is an advisory fixed?”*  and *“In the wild, how many exploits have been attributed to a particular advisory?”*  Unlike in Windows, in Linux the answers to these questions is usually very reassuring.
+Generally, trying to switch between applications in the hope of avoiding packages with advisories is a fools errand. All you will achieve is a really bad migraine! Instead of wasting your time, what you should be paying attention to is: *“How quickly is an advisory fixed?”*  and *“In the wild, how many exploits have been attributed to a particular advisory?”*  Unlike in Windows, in Linux the answers to these questions is usually very reassuring.
 
 *For an interesting take on Linux advisories and how it has gone wrong with WebKitGTK2, see this blog post by Gnome developer Michael Catanzaro: https://blogs.gnome.org/mcatanzaro/2016/02/01/on-webkit-security-updates/*
 
@@ -46,7 +53,7 @@ Similarly, do not confuse ‘/usr/local/bin/’ with ‘/usr/bin’.
 On a final note, when running ‘untrusted’😈 applications, a sandbox is a really good idea.  Firetools-0.9.46  has an excellent wizard which, (literally,)  allows you create a sandbox in seconds. Unfortunately, you will have to compile it yourself, since the AUR Firetools, (at version 0.9.44,) is out of date.
 
 <br><br>
-# Screenshots
+# Screenshots:
 
 **Applications affected by an advisory:**
 ![Advisory tables](/screenshots/Advisories.png?raw=true "Advisory Tables")

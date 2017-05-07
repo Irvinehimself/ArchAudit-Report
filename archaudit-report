@@ -49,7 +49,7 @@ GnuLicence="http://www.gnu.org/licenses/"
 PathToTemp="/tmp/"
 
 ### Records
-PckgListFile="$PathToTemp""PckgListTmp.txt" ### Package Format = ':PckgName:RskClr:PckgRsk:SortRisk:DepCount'
+PckgListFile="$PathToTemp""PckgListTmp.txt"         ### Package Format = ':PckgName:RskClr:PckgRsk:SortRisk:DepCount'
 AppListFile="$PathToTemp""AppListTmp.txt"           ### Apps with inherited advisories. Format ':AppNme:C:H:M:L:U'
 
 ### ### Counters
@@ -82,16 +82,17 @@ UndefAppListFile="$PathToTemp""UndefAppListTmp.txt"
 
 ### ### Text colour definitions
 # (For an expansive colour chart see http://misc.flogisoft.com/bash/tip_colors_and_formatting)
-PkgClr="\e[01;32m"          # green
-DefClr="\e[0m"              # Default white colour
-LowRsk="\e[38;5;148m"       # green yellow
-MedRsk="\e[38;5;11m"        # light yellow
-HighRsk="\e[38;5;208m"      # orange red
-CrtclRsk="\e[01;31m"        # red
-UnDefRsk="\e[38;5;218m"     # light pink
-HypLnk="\e[01;36m"          # light cyan
-NoteClr="\e[38;5;81m"      # pale blue
-AppClr="\e[38;5;104m"       # light mauve
+BldFce='\e[1m'
+PkgClr='\e[01;32m'          # green
+DefClr='\e[0m'              # Default white colour
+LowRsk='\e[38;5;148m'       # green yellow
+MedRsk='\e[38;5;11m'        # light yellow
+HighRsk='\e[38;5;208m'      # orange red
+CrtclRsk='\e[01;31m'        # red
+UnDefRsk='\e[38;5;218m'     # light pink
+HypLnk='\e[01;36m'          # light cyan
+NoteClr='\e[38;5;81m'       # pale blue
+AppClr='\e[38;5;104m'       # light mauve
 
 ### ### Pre-highlighted text and notices
 Warning=$CrtclRsk"Warning:"$DefClr
@@ -126,70 +127,79 @@ function DrawLine() {
 
 function MakeTitleBox() {
     echo
-    #MakeTitleBox "15" "67" "WhoNeeds report"
+    # MakeTitleBox "15" "67" "WhoNeeds report"
     UnderLine=$(DrawLine "$1" "*")
-    printf '\e[1m'
+    printf "$BldFce"
     printf "%$2s\n" "$UnderLine"
     printf "%$2s\n" "$3"
     printf "%$2s" "$UnderLine"
-    printf '\e[0m\n'
+    printf "$DefClr\n"
     #echo
 }
 
-function PrintBoxLine() {
+function PrintFBoxLine() {
     printf "$DefClr"
     printf "─"
 }
 
-function PrintBoxEdge() {
+function PrintFBoxEdge() {
     printf "$DefClr"
     printf "│"
 }
 
-function PrintLeftTopCorn() {
+function PrintFLeftTopCorn() {
     printf "$DefClr"
     printf "┌"
 }
 
-function PrintRghtTopCorn() {
+function PrintFRghtTopCorn() {
     printf "$DefClr"
     printf "┐"
 }
 
-function PrintLeftBtmCorn() {
+function PrintFLeftBtmCorn() {
     printf "$DefClr"
     printf "└"
 }
 
-function PrintRghtBtmCorn() {
+function PrintFRghtBtmCorn() {
     printf "$DefClr"
     printf "┘"
 }
 
-function PrintLeftJunction() {
+function PrintFLeftJunction() {
     printf "$DefClr"
     printf "├"
 }
 
-function PrintRghtJunction() {
+function PrintFRghtJunction() {
     printf "$DefClr"
     printf "┤"
 }
 
-function PrintTopJunction() {
+function PrintFTopJunction() {
     printf "$DefClr"
     printf "┬"
 }
 
-function PrintBtmJunction() {
+function PrintFBtmJunction() {
     printf "$DefClr"
     printf "┴"
 }
 
-function PrintCrssJunction() {
+function PrintFCrssJunction() {
     printf "$DefClr"
     printf "┼"
 }
+
+function PrintFSpace() {
+    printf " "
+}
+
+function PrintFNewline() {
+    printf '%s\n'
+}
+
 
 ### ### ### End  Lines, Boxes and Tables ### ### ###
 
@@ -200,8 +210,8 @@ function TitleDate() {
     echo
     echo
     MakeTitleBox "57" "90" "ArchAudit WhoNeeds Report:   $(date)"
-    printf '\e[1m%-20s\n' "Raw arch-audit results:"
-    printf '\e[0m\n'
+    printf '$BldFce%-20s\n' "Raw arch-audit results:"
+    printf "$DefClr\n"
     arch-audit | fold -w 120 - # Pipe wordwraps arch-audit output.No -s option forces break at 120 char, (not nearest space)
     echo
 }
@@ -328,68 +338,68 @@ function DrawPckgListTableHeader() {
     BoxLine4=$(DrawLine "70" "─")
     echo "Here is a ranked list of the advisories that affect you:"
     ### Top box outline
-    printf " "
-    PrintLeftTopCorn
+    PrintFSpace
+    PrintFLeftTopCorn
     printf "$BoxLine1"
-    PrintTopJunction
+    PrintFTopJunction
     printf "$BoxLine2"
-    PrintTopJunction
+    PrintFTopJunction
     printf "$BoxLine3"
-    PrintTopJunction
+    PrintFTopJunction
     printf "$BoxLine4"
-    PrintRghtTopCorn
-    printf '%s\n'
+    PrintFRghtTopCorn
+    PrintFNewline
     ### Text line
-    printf " "
-    PrintBoxEdge
+    PrintFSpace
+    PrintFBoxEdge
     printf '%-28s' " Package"
-    PrintBoxEdge
+    PrintFBoxEdge
     printf '%-5s'
     printf '%-8s' "Risk"
-    PrintBoxEdge
+    PrintFBoxEdge
     printf '%-4s' "Hits"
-    PrintBoxEdge
+    PrintFBoxEdge
     printf '%-18s'
     printf '%-50s' "Advisory"
-    PrintBoxEdge
-    printf '%s\n'
+    PrintFBoxEdge
+    PrintFNewline
     ###  Bottom box outline
-    printf " "
-    PrintLeftJunction
+    PrintFSpace
+    PrintFLeftJunction
     printf "$BoxLine1"
-    PrintBtmJunction
+    PrintFBtmJunction
     printf "$BoxLine2"
-    PrintBtmJunction
+    PrintFBtmJunction
     printf "$BoxLine3"
-    PrintBtmJunction
+    PrintFBtmJunction
     printf "$BoxLine4"
-    PrintRghtJunction
-    printf '%s\n'
+    PrintFRghtJunction
+    PrintFNewline
 }
 
 function DrawPckgListTableFooter(){
     BoxLine=$(DrawLine "118" "─")
     ### Top outline
-    printf " "
-    PrintLeftJunction
+    PrintFSpace
+    PrintFLeftJunction
     printf "$BoxLine"
-    PrintRghtJunction
-    printf '%s\n'
+    PrintFRghtJunction
+    PrintFNewline
     ### Text line
     Advis="advisory"
-    printf " "
-    PrintBoxEdge
+    PrintFSpace
+    PrintFBoxEdge
     printf '%-60s' " Full details on all Arch Linux advisories can be found at:"
     printf "$HypLnk"
     printf '%-56s' "$ArchSecurity$Advis"
-    PrintBoxEdge
-    printf '%s\n'
+    PrintFBoxEdge
+    PrintFNewline
     ### Bottom box outline
-    printf " "
-    PrintLeftBtmCorn
+    PrintFSpace
+    PrintFLeftBtmCorn
     printf "$BoxLine"
-    PrintRghtBtmCorn
-    printf '%s\n'
+    PrintFRghtBtmCorn
+    PrintFNewline
 }
 
 function GetPckgList() {
@@ -412,7 +422,7 @@ function GetPckgList() {
         SortRisk="$(echo $PckgRecord | cut -d':' -f5)"  ### Note this field is used purely for numeric sorting
         AppCount="$(echo $PckgRecord | cut -d':' -f6)"  # Isolate the 5th non empty  field
         #
-        printf " "; PrintBoxEdge;
+        PrintFSpace; PrintFBoxEdge;
         printf "$PkgClr"
         printf '%-28s' " $PckgName"
         printf "$RiskClr"
@@ -421,7 +431,7 @@ function GetPckgList() {
         printf '%4s' "$AppCount"
         printf "$HypLnk"
         printf '%-69s' " $PckgIssue$PckgName"
-        PrintBoxEdge; printf '%s\n'
+        PrintFBoxEdge; PrintFNewline
     done
     DrawPckgListTableFooter
     echo -e "$DefClr" # Restore default colour and create line break
@@ -436,47 +446,47 @@ function DrawAppListTableHeader() {
     BoxLine=$(DrawLine "59" "─")
     echo "Finally, here is a ranked list of affected applications:"
     ### Top box outline
-    printf " "
-    PrintLeftTopCorn
+    PrintFSpace
+    PrintFLeftTopCorn
     printf "$BoxLine"
-    PrintTopJunction
+    PrintFTopJunction
     printf "$BoxLine"
-    PrintRghtTopCorn
-    printf '%s\n'
+    PrintFRghtTopCorn
+    PrintFNewline
     ### Text line
-    printf " "
-    PrintBoxEdge
+    PrintFSpace
+    PrintFBoxEdge
     printf '%-45s' " Application"
     printf '%-12s' "Risk Tally"
-    PrintBoxEdge
+    PrintFBoxEdge
     printf '%-45s' " Application"
     printf '%-12s' "Risk Tally"
-    PrintBoxEdge
-    printf '%s\n'
+    PrintFBoxEdge
+    PrintFNewline
     ### Bottom box outline
-    printf " "
-    PrintLeftJunction
+    PrintFSpace
+    PrintFLeftJunction
     printf "$BoxLine"
-    PrintCrssJunction
+    PrintFCrssJunction
     printf "$BoxLine"
-    PrintRghtJunction
-    printf '%s\n'
+    PrintFRghtJunction
+    PrintFNewline
 }
 
 function DrawAppListTableFooter(){
     BoxLine=$(DrawLine "59" "─")
     ### Botom box line
-    printf " "
-    PrintLeftBtmCorn
+    PrintFSpace
+    PrintFLeftBtmCorn
     printf "$BoxLine"
-    PrintBtmJunction
+    PrintFBtmJunction
     printf "$BoxLine"
-    PrintRghtBtmCorn
-    printf '%s\n'
+    PrintFRghtBtmCorn
+    PrintFNewline
 }
 
 function AppListPrintF() {
-    PrintBoxEdge
+    PrintFBoxEdge
     printf "$AppClr"
     printf '%-42s' " $AppNme"
     printf "$CrtclRsk"
@@ -511,20 +521,20 @@ function GetApplist() {
         ###
         if [[ "$Column" == "1" ]] ; then
                 Column=$((Column + 1))
-                printf " "
+                PrintFSpace
                 AppListPrintF
             else
                     Column="1"
                     AppListPrintF
-                    PrintBoxEdge
-                    printf '%s\n'
+                    PrintFBoxEdge
+                    PrintFNewline
         fi
     done
     if [[ "$Column" == "2" ]] ; then    # If the last row is incomplete, we need to finsh the row
-        PrintBoxEdge
+        PrintFBoxEdge
         printf '%57s'
-        PrintBoxEdge
-        printf '%s\n'
+        PrintFBoxEdge
+        PrintFNewline
     fi
     DrawAppListTableFooter
     ) # Close pipe
@@ -548,82 +558,82 @@ function AdvsTableHeader(){
     BoxLine6=$(DrawLine "7" "─")
     ### Top box line
     AdvsTableIndent
-    PrintLeftTopCorn
+    PrintFLeftTopCorn
     printf "$BoxLine1"
-    PrintTopJunction
+    PrintFTopJunction
     printf "$BoxLine2"
-    PrintRghtTopCorn
-    printf '%s\n'
+    PrintFRghtTopCorn
+    PrintFNewline
     ### Top header line
     AdvsTableIndent
-    PrintBoxEdge
+    PrintFBoxEdge
     printf '%5s'
     printf '%-16s' "Advisories"
-    PrintBoxEdge
+    PrintFBoxEdge
     printf "Apllications"
-    PrintBoxEdge
-    printf '%s\n'
+    PrintFBoxEdge
+    PrintFNewline
     ### Middle box line
     AdvsTableIndent
-    PrintLeftJunction
+    PrintFLeftJunction
     printf "$BoxLine3"
-    PrintTopJunction
+    PrintFTopJunction
     printf "$BoxLine4"
-    PrintCrssJunction
+    PrintFCrssJunction
     printf "$BoxLine5"
-    PrintTopJunction
+    PrintFTopJunction
     printf "$BoxLine6"
-    PrintRghtJunction
-    printf '%s\n'
+    PrintFRghtJunction
+    PrintFNewline
     ### Bottom header line
     AdvsTableIndent
-    PrintBoxEdge
+    PrintFBoxEdge
     printf '%4s' "Hits"
-    PrintBoxEdge
+    PrintFBoxEdge
     printf '%6s'
     printf '%-10s' "Risk"
-    PrintBoxEdge
+    PrintFBoxEdge
     printf '%1s'
     printf '%-5s' "Net"
-    PrintBoxEdge
+    PrintFBoxEdge
     printf "Gross"
-    PrintBoxEdge
-    printf '%s\n'
+    PrintFBoxEdge
+    PrintFNewline
     ### Bottom box line
     AdvsTableIndent
-    PrintLeftJunction
+    PrintFLeftJunction
     printf "$BoxLine3"
-    PrintBtmJunction
+    PrintFBtmJunction
     printf "$BoxLine4"
-    PrintBtmJunction
+    PrintFBtmJunction
     printf "$BoxLine5"
-    PrintBtmJunction
+    PrintFBtmJunction
     printf "$BoxLine6"
-    PrintRghtJunction
-    printf '%s\n'
+    PrintFRghtJunction
+    PrintFNewline
 
 }
 
 function AdvsTableFooter(){
     BoxLine=$(DrawLine "36" "─")
     AdvsTableIndent
-    PrintLeftBtmCorn
+    PrintFLeftBtmCorn
     printf "$BoxLine"
-    PrintRghtBtmCorn
-    printf '%s\n'
+    PrintFRghtBtmCorn
+    PrintFNewline
 }
 
 function AdvsPrintF() {
     AdvsTableIndent
-    PrintBoxEdge
+    PrintFBoxEdge
     printf '%-4s' " $1"         # Advisory count
     printf "$2"                 # Risk colour
     printf '%16s' "$3"          # Risk string/label
     printf "$DefClr"
     printf '%7s' "$4 "           # Net AppCount
     printf '%7s' "$5 "          # Gross Appcount
-    PrintBoxEdge
-    printf '%s\n'
+    PrintFBoxEdge
+    PrintFNewline
 }
 
 function GetAdvsList(){
@@ -647,9 +657,8 @@ function GetAdvsList(){
     printf "$NoteClr%34s" "Note on gross and net counts:"
     printf "$DefClr%76s\n" " Applications have multiple dependencies. If an applications has two or more"
     printf '%114s\n' "dependencies with advisories, double counting gives an inflated count of affected applications. Even so, this"
-    printf '%114s\n' "'gross' count still contains valuable information about how applications are affected by multiple advisories."
-    printf '%114s\n' "On the other hand, the 'net' count,  which does not double count, may be considered a true count of affected "
-    printf '%18s\n' "applications."
+    printf '%114s\n' "'gross' count still contains valuable information. On the other hand, the 'net' count,  which does not double"
+    printf '%85s\n' "count, may be considered a true count of applications with inherited advisories."
     ###
     echo
 }
@@ -729,11 +738,11 @@ function IncNetRiskcount() {
 function DrawAdvisoryTableHeader(){
     BoxLine=$(DrawLine "117" "─")
     ### Botom box line
-    printf " "
-    PrintLeftTopCorn
+    PrintFSpace
+    PrintFLeftTopCorn
     printf "$BoxLine"
-    PrintRghtTopCorn
-    printf '%s\n'
+    PrintFRghtTopCorn
+    PrintFNewline
 }
 
 function DrawAdvisoryTableFooter(){
@@ -742,14 +751,14 @@ function DrawAdvisoryTableFooter(){
     LineEnd=$((115-SentenceSize))
     BoxLine=$(DrawLine "117" "─")
     ### Top outline
-    printf " "
-    PrintLeftJunction
+    PrintFSpace
+    PrintFLeftJunction
     printf "$BoxLine"
-    PrintRghtJunction
-    printf '%s\n'
+    PrintFRghtJunction
+    PrintFNewline
     ### Text line
-    printf " "
-    PrintBoxEdge
+    PrintFSpace
+    PrintFBoxEdge
     printf " The "
     printf "$PkgClr"
     printf "$1 "
@@ -758,14 +767,14 @@ function DrawAdvisoryTableFooter(){
     printf "$HypLnk"
     printf "$PckgIssue$1"
     printf "%$LineEnd""s"
-    PrintBoxEdge
-    printf '%s\n'
+    PrintFBoxEdge
+    PrintFNewline
     ### Bottom box outline
-    printf " "
-    PrintLeftBtmCorn
+    PrintFSpace
+    PrintFLeftBtmCorn
     printf "$BoxLine"
-    PrintRghtBtmCorn
-    printf '%s\n'
+    PrintFRghtBtmCorn
+    PrintFNewline
 }
 
 function ParseArchAudit() {
@@ -790,7 +799,7 @@ function ParseArchAudit() {
                         RskClr=$LowRsk
                         LowAdvisCount=$((LowAdvisCount + 1))
                         AppRisk="Low"
-                        PckgRecord=":$PckgName:$RskClr:Low Risk!:2:";;    # See below for explanation PckgRecord of fields
+                        PckgRecord=":$PckgName:$RskClr:Low Risk!:2:";;    # See below for explanation of PckgRecord fields
               " Medium risk!")
                         RskClr=$MedRsk
                         MediumAdvisCount=$((MediumAdvisCount + 1))
@@ -874,15 +883,15 @@ function ParseArchAudit() {
                             ### Print out names of affected apps to stndout
                             Column=$((Column + 1))
                             if [[ "$Column" == "1" ]]; then
-                                    printf " "
-                                    PrintBoxEdge
+                                    PrintFSpace
+                                    PrintFBoxEdge
                                     printf "$AppClr%-39s" " $AppNme"
                                 else if [[ "$Column" == "2" ]]; then
                                         printf "$AppClr%-38s" "$AppNme"
                                     else
                                             printf "$AppClr%-38s" "$AppNme"
-                                            PrintBoxEdge
-                                            printf '\n'
+                                            PrintFBoxEdge
+                                            PrintFNewline
                                             Column="0"
                                 fi
                             fi
@@ -890,20 +899,20 @@ function ParseArchAudit() {
             done
             if [[ "$Column" == "1" ]] ; then        # If the last row is incomplete, we need to finsh the row
                     printf '%76s'
-                    PrintBoxEdge
-                    printf '%s\n'
+                    PrintFBoxEdge
+                    PrintFNewline
                 else if [[ "$Column" == "2" ]] ; then
                         printf '%38s'
-                        PrintBoxEdge
-                        printf '%s\n'
+                        PrintFBoxEdge
+                        PrintFNewline
                 fi
             fi
             if [[ $PckgAppcount == "0" ]]; then     # Creates an empty table row when there is no affected applications
-                printf " "
-                PrintBoxEdge
+                PrintFSpace
+                PrintFBoxEdge
                 printf "%115s"
-                PrintBoxEdge
-                printf '\n'
+                PrintFBoxEdge
+                PrintFNewline
 
             fi
             # PckgRecord consists of the fields ':PckgName:RiskClr:PckgRsk:SortRisk:PckgAppcount'
