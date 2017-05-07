@@ -6,10 +6,10 @@
 * whoneeds (pkgtools AUR  https://aur.archlinux.org/packages/pkgtools/)
 
 **Contents:**
-&nbsp;&nbsp;&nbsp;&nbsp;What is ArchAudit-Report?
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Features:
-&nbsp;&nbsp;&nbsp;&nbsp;Installation:
-&nbsp;&nbsp;&nbsp;&nbsp;Screenshots:
+* What is ArchAudit-Report?
+* &nbsp;&nbsp; Features:
+* Installation:
+* Screenshots:
 
 <br><br>
 ### What is ArchAudit-Report?
