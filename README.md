@@ -5,10 +5,9 @@
 * arch-audit (community)
 * whoneeds (pkgtools AUR  https://aur.archlinux.org/packages/pkgtools/)
 
-<br><br>
 **Contents:**
 * What is ArchAudit-Report?
-..* Features:
+* Features:
 * Installation:
 * Screenshots:
 
