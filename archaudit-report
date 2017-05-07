@@ -197,13 +197,12 @@ function PrintCrssJunction() {
 ### ### ### Titles and Notes ### ### ###
 
 function TitleDate() {
-    UnderLine=$(DrawLine "57" "*")
     echo
     echo
     MakeTitleBox "57" "90" "ArchAudit WhoNeeds Report:   $(date)"
     printf '\e[1m%-20s\n' "Raw arch-audit results:"
     printf '\e[0m\n'
-    arch-audit | fold -w 120 - # no -s option forces break at 120 char, (as oppose to breaking at nearest space)
+    arch-audit | fold -w 120 - # Pipe wordwraps arch-audit output.No -s option forces break at 120 char, (not nearest space)
     echo
 }
 
@@ -269,7 +268,7 @@ function GetTrueAdvisCount() {
 }
 
 function SaveTrueAdvisCount() {
-    echo    "$AdvisCount" > "$AdvisCountFile"     # Preserve the values for outside pipe sub-shell
+    echo    "$AdvisCount" > "$AdvisCountFile"
     echo "$CrtclAdvisCount" > "$CrtclAdvisCountFile"
     echo     "$HighAdvisCount" > "$HighAdvisCountFile"
     echo   "$MediumAdvisCount" > "$MediumAdvisCountFile"
@@ -327,7 +326,7 @@ function DrawPckgListTableHeader() {
     BoxLine2=$(DrawLine "15" "─")
     BoxLine3=$(DrawLine "6" "─")
     BoxLine4=$(DrawLine "70" "─")
-    echo "Here is a ranked list of the advisories that concern you:"
+    echo "Here is a ranked list of the advisories that affect you:"
     ### Top box outline
     printf " "
     PrintLeftTopCorn
@@ -406,11 +405,11 @@ function GetPckgList() {
     ### The option '-t:' signifies that ':' is to be the field  separator.
     sort -t: -nr -k5,5 -k6,6 "$PckgListFile" |\
     while read -r PckgRecord; do
-        ### Note the 4th field, SortRisk, is only for numeric sorting.
+        ### Note the 5th field, SortRisk, is only for numeric sorting.
         PckgName="$(echo $PckgRecord | cut -d':' -f2)"  # Isolate the 1st non empty field
          RiskClr="$(echo $PckgRecord | cut -d':' -f3)"  # Isolate the 2nd non empty  field
          PckgRsk="$(echo $PckgRecord | cut -d':' -f4)"  # Isolate the 3rd non empty  field
-                                                        ### Note the 5th field is used purely for numeric sorting
+        SortRisk="$(echo $PckgRecord | cut -d':' -f5)"  ### Note this field is used purely for numeric sorting
         AppCount="$(echo $PckgRecord | cut -d':' -f6)"  # Isolate the 5th non empty  field
         #
         printf " "; PrintBoxEdge;
@@ -499,7 +498,7 @@ function GetApplist() {
     ### Note: To avoid confusing AppNames like: 'git', 'jstest-gtk-git' and 'sdl2-jstest-git'. we
     ### need to make the first field empty. That way, we can fully encapsulate '$Appname' in colons
     ### and thus eliminate false positives, (touch wood.)
-    sort -t: -nr -k2,2 -k3,3 -k4,4 -k5,5 -k6,6 "$AppListFile" |\
+    sort -t: -nr -k3,3 -k4,4 -k5,5 -k6,6 -k7,7  "$AppListFile" |\
     ( # Open pipe
     Column="1"
     while read -r AppListRecord; do
@@ -645,11 +644,12 @@ function GetAdvsList(){
     AdvsTableFooter
     #echo
     #
-    printf "$NoteClr\e[1m%34s" "Note on gross and net counts:"
-    printf '\e[0m%76s\n' " Applications have multiple dependencies. If an applications has two or more"
-    printf '%111s\n' "dependencies with advisories, double counting inflates the count of affected applications. The gross count"
-    printf '%111s\n' "represents how applications are affected by multiple advisories and thus double-counts. The net count does"
-    printf '%9s\n' "not."
+    printf "$NoteClr%34s" "Note on gross and net counts:"
+    printf "$DefClr%76s\n" " Applications have multiple dependencies. If an applications has two or more"
+    printf '%114s\n' "dependencies with advisories, double counting gives an inflated count of affected applications. Even so, this"
+    printf '%114s\n' "'gross' count still contains valuable information about how applications are affected by multiple advisories."
+    printf '%114s\n' "On the other hand, the 'net' count,  which does not double count, may be considered a true count of affected "
+    printf '%18s\n' "applications."
     ###
     echo
 }
@@ -706,7 +706,7 @@ function InialiseCounters() {
     UndefAppCountG="0"
     echo "$UndefAppCountG" > "$UndefAppCountGFile"
     UndefAppCountN="0"
-echo "$UndefAppCountN" > "$UndefAppCountNFile"
+    echo "$UndefAppCountN" > "$UndefAppCountNFile"
 
 }
 
@@ -726,7 +726,7 @@ function IncNetRiskcount() {
     echo "$Ncount"                                      # return result to subshell
 }
 
-function DrawParseAdvisoryTableHeader(){
+function DrawAdvisoryTableHeader(){
     BoxLine=$(DrawLine "117" "─")
     ### Botom box line
     printf " "
@@ -736,7 +736,7 @@ function DrawParseAdvisoryTableHeader(){
     printf '%s\n'
 }
 
-function DrawParseAdvisoryTableFooter(){
+function DrawAdvisoryTableFooter(){
     SentenceNoFormat=" The $1 advisory can be found at: $PckgIssue$1"
     SentenceSize=${#SentenceNoFormat}
     LineEnd=$((115-SentenceSize))
@@ -822,7 +822,7 @@ function ParseArchAudit() {
             while read AppNme; do
                 if [[ "$AppNme" == *"Packages that depend on"* ]] ; then
                         # We replaced whoneeds report intro. So, make pretty table header
-                        DrawParseAdvisoryTableHeader
+                        DrawAdvisoryTableHeader
                     else
                             PckgAppcount=$((PckgAppcount + 1))                # increments number of apps affected by package
                             ### Check if AppListFile exists and that AppNme has a record
@@ -912,7 +912,7 @@ function ParseArchAudit() {
             #
             SaveTrueAppCounts                       # Update the true *AppCounts while still inside second pipe
             )                                       # Close the second pipe.
-        DrawParseAdvisoryTableFooter "$PckgName"
+        DrawAdvisoryTableFooter "$PckgName"
         echo
     done
     SaveTrueAdvisCount                              # Preserve the values for outside pipe sub-shell
@@ -934,5 +934,4 @@ InialiseCounters
 TitleDate
 StartWhoNeedsReport
 ReportSummary
-echo
 ### ### ### ### ### ### ### ### ###  End ### ### ### ### ### ### ### ### ###

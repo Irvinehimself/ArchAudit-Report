@@ -1,4 +1,4 @@
-# ArchAudit-Report v1.00
+# ArchAudit-Report
 **License:** GPLv3
 
 **Dependencies:**
@@ -6,11 +6,11 @@
 * whoneeds (pkgtools AUR  https://aur.archlinux.org/packages/pkgtools/)
 
 ### What is it?
-Okay, being honest,  this utility is more informative than practical. However, **it is very informative!**
+Okay, being honest, this utility is more informative than practical. However, it is very informative!
 
-As you may know, ‘arch-audit’, is a tool which tells you which packages installed on your system have been issued security advisories, (see https://security.archlinux.org/). Unfortunately, the formatting of the arch-audit output is designed to facilitate piping to other auditing tools, for example Lynis. For a human, this raw output is neither informative, nor particularly readable.
+As you may know, ‘arch-audit’, is a tool which tells you which packages installed on your system have been issued security advisories, (see https://security.archlinux.org/). Unfortunately, the formatting of the arch-audit output is designed to facilitate piping to other auditing tools, (for example Lynis.) For a human, this raw output is neither informative, nor particularly readable.
 
-Written in bash, ‘archaudit-report’ parses the raw output from ‘arch-audit’ into a formatted, easy to read top down look at how the underlying advisories affect your applications.
+Written in bash, ‘archaudit-report’ parses the raw output from ‘arch-audit’ and pipes it to 'whoneeds'. Analysing the output from the pipe, it then uses this data to prepare an easy to read, top down look at how the underlying advisories affect your applications.
 
 ### Features:
 1. Colour coded highlights of the package name and associated risk.
@@ -23,14 +23,11 @@ Written in bash, ‘archaudit-report’ parses the raw output from ‘arch-audit
       * A similar breakdown as above, detailing the number of applications affected at each risk level.
       * A ranked summary of the advisories, sorted by level of risk then number of affected applications
       * A ranked summary of affected applications sorted by risk
-	
-**Note1:**
+
+**Notes:**
 This utility is meant to give an overview of which applications are affected by Arch Linux security advisories. It is not meant to be a measure of how secure a system is. To measure the overall level of system hardness, use Lynis or some other security auditing tool.
 
-**Note2:**
-It is important to realise that trying to switch  between packages in the hope of eliminating vulnerabilities is a fools errand. All it will achieve is a really bad migraine! 
-
-What you should really be paying attention to is: **“How quickly are they fixed?”**  and **“In the wild, how many exploits have been attributed to a particular advisory?”**  Unlike in Windows, in Linux the answers to these questions are usually very reassuring.
+Also, it is important to realise that trying to switch between applications in the hope of avoiding advisories is a fools errand. All it will achieve is a really bad migraine! What you should really be paying attention to is: *“How quickly is an advisory fixed?”*  and *“In the wild, how many exploits have been attributed to a particular advisory?”*  Unlike in Windows, in Linux the answers to these questions is usually very reassuring.
 
 *For an interesting take on Linux advisories and how it has gone wrong with WebKitGTK2, see this blog post by Gnome developer Michael Catanzaro: https://blogs.gnome.org/mcatanzaro/2016/02/01/on-webkit-security-updates/*
 
@@ -38,15 +35,13 @@ What you should really be paying attention to is: **“How quickly are they fixe
 # Installation:
 Once I get some feedback, I will put it in the AUR. Until then, installation is a matter of personal choice. This post on the Arch forums discusses various installation options for bash shells: https://bbs.archlinux.org/viewtopic.php?id=165042
 
-You should note that the choice of installation directory may be limited by your security model. For example, without fiddling, neither Grsecurity, nor Firejail with Apparmor enabled allow you to run executables from your home directory.
- 
-With the above caveat in mind, (apart from just dropping the file into a terminal,) the easiest installation method is to copy, (as root,) ‘archaudit-report’ into ‘/usr/local/bin/’. Since this is already in  $PATH, nothing further should be needed and simply entering ‘archaudit-report’ into a terminal will generate the report.
+Primarily, the most important consideration is to check that the file "archaudit-report" has permission to run as an executable. I believe 'chmod 755  archaudit-report’ does the trick, (alternatively you can use your file-manager GUI 😅)
 
-**Note:** It is **ABSOLUTELY NOT** necessary to run this shell with sudo!
+If your security model permits it, for testing, you can just drop the file into a terminal. For a full installation, (necessary to run ‘archaudit-report’ directly from the command line,) the easiest method is to copy, (as root,) ‘archaudit-report’ into ‘/usr/local/bin/’. Since this directory is already in  $PATH, nothing further should be needed.
 
-**Note:** Do not confuse ‘/usr/local/bin/’ with ‘/usr/bin’.
+Note, it is **ABSOLUTELY NOT** necessary to run this shell with sudo!
 
-If there is a problem, check that non root users have  permission to run it as an executable, I believe  ‘sudo chmod 755  archaudit-report’ does the trick.
+Similarly, do not confuse ‘/usr/local/bin/’ with ‘/usr/bin’.
 
 On a final note, when running ‘untrusted’😈 applications, a sandbox is a really good idea.  Firetools-0.9.46  has an excellent wizard which, (literally,)  allows you create a sandbox in seconds. Unfortunately, you will have to compile it yourself, since the AUR Firetools, (at version 0.9.44,) is out of date.
 
