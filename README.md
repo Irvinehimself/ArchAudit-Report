@@ -34,7 +34,7 @@ What you should really be paying attention to is: **“How quickly are they fixe
 
 *For an interesting take on Linux advisories and how it has gone wrong with WebKitGTK2, see this blog post by Gnome developer Michael Catanzaro: https://blogs.gnome.org/mcatanzaro/2016/02/01/on-webkit-security-updates/*
 
-
+<br><br>
 # Installation:
 Once I get some feedback, I will put it in the AUR. Until then, installation is a matter of personal choice. This post on the Arch forums discusses various installation options for bash shells: https://bbs.archlinux.org/viewtopic.php?id=165042
 
@@ -50,6 +50,20 @@ If there is a problem, check that non root users have  permission to run it as a
 
 On a final note, when running ‘untrusted’😈 applications, a sandbox is a really good idea.  Firetools-0.9.46  has an excellent wizard which, (literally,)  allows you create a sandbox in seconds. Unfortunately, you will have to compile it yourself, since the AUR Firetools, (at version 0.9.44,) is out of date.
 
-### ToDo: Screenshots
+<br><br>
+# Screenshots
 
+**Applications affected by an advisory:**
+![Advisory tables](/screenshots/Advisories.png?raw=true "Advisory Tables")
+<br><br>
 
+**Summary overview:**
+![Summary overview](/screenshots/Overview.png?raw=true "Summary Overview")
+<br><br>
+
+**Ranked list of advisories:**
+![Advisory list](/screenshots/AdvisoryList.png?raw=true "Advisory List")
+<br><br>
+
+**Ranked list of affected applications:**
+![Application list](/screenshots/ApplicationList.png?raw=true "Application List")
