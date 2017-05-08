@@ -5,16 +5,15 @@
 * arch-audit (community)
 * whoneeds (pkgtools AUR  https://aur.archlinux.org/packages/pkgtools/)
 
-&nbsp;
-
+<br><br>
 ### Contents:
 * What is ArchAudit-Report?
 * Features:
+* Notes:
 * Installation:
 * Screenshots:
 
-&nbsp;
-
+<br><br>
 ### What is ArchAudit-Report?
 Okay, being honest, this utility is more informative than practical. However, it is very informative!
 
@@ -22,6 +21,7 @@ As you may know, ‘arch-audit’, is a tool which tells you which packages inst
 
 Written in bash, ‘archaudit-report’ parses the raw output from ‘arch-audit’ and pipes it to 'whoneeds'. Analysing the output from the pipe, it then uses this data to prepare an easy to read, top down look at how the underlying advisories affect your applications.
 
+<br><br>
 ### Features:
 1. Colour coded highlights of the package name and associated risk.
 2. A (clickable) link to the specific  package advisory at  https://security.archlinux.org/
@@ -34,15 +34,15 @@ Written in bash, ‘archaudit-report’ parses the raw output from ‘arch-audit
       * A ranked summary of the advisories, sorted by level of risk then number of affected applications
       * A ranked summary of affected applications sorted by risk
 
-**Notes:**
+<br><br>
+### Notes:
 This utility is meant to give an overview of which applications are affected by Arch Linux security advisories. It is not meant to be a measure of how secure a system is. To measure the overall level of system hardness, use Lynis or some other security auditing tool.
 
 Generally, trying to switch between applications in the hope of avoiding packages with advisories is a fools errand. All you will achieve is a really bad migraine! Instead of wasting your time, what you should be paying attention to is: *“How quickly is an advisory fixed?”*  and *“In the wild, how many exploits have been attributed to a particular advisory?”*  Unlike in Windows, in Linux the answers to these questions is usually very reassuring.
 
 *For an interesting take on Linux advisories and how it has gone wrong with WebKitGTK2, see this blog post by Gnome developer Michael Catanzaro: https://blogs.gnome.org/mcatanzaro/2016/02/01/on-webkit-security-updates/*
 
-&nbsp;
-
+<br><br>
 ### Installation:
 Once I get some feedback, I will put it in the AUR. Until then, installation is a matter of personal choice. This post on the Arch forums discusses various installation options for bash shells: https://bbs.archlinux.org/viewtopic.php?id=165042
 
@@ -56,8 +56,7 @@ Similarly, do not confuse ‘/usr/local/bin/’ with ‘/usr/bin’.
 
 On a final note, when running ‘untrusted’😈 applications, a sandbox is a really good idea.  Firetools-0.9.46  has an excellent wizard which, (literally,)  allows you create a sandbox in seconds. Unfortunately, you will have to compile it yourself, since the AUR Firetools, (at version 0.9.44,) is out of date.
 
-&nbsp;
-
+<br><br>
 ### Screenshots:
 
 **Applications affected by an advisory:**

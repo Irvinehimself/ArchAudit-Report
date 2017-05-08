@@ -408,7 +408,7 @@ function DrawPckgListTableFooter(){
 function GetPckgList() {
     echo
     DrawPckgListTableHeader
-    ### PckgRecord consists of the fields ':PckgName:RiskClr:PckgRsk:SortRisk:PckgAppcount'
+    ### PckgRecord consists of the fields ':PckgName:RiskClr:PckgRsk:SortRisk:PckgAppCount'
     ### Note: The 1st field is empty. Other records in this bash use the empty field trick to wrap the package name in
     ### double colons. This is to avoid confusing 'Doe' with 'Jane-Doe'/'John-Doe'. Technical, (with this particular
     ### record,) that consideration is not a problem. But, by adopting the convention bash wide, it greatly simplifies
@@ -785,7 +785,7 @@ function ParseArchAudit() {
     arch-audit | \
     ( # Because of the  pipe, we need a sub shell to preserve variables for processing outside while loop
     while read PckgAdvisory; do
-        UpDateFlag=""                             # Will hold update string, if available
+        UpDateFlag=""                                       # Will hold update string, if available
         PckgName=${PckgAdvisory%" is affected by ["*}       # Chop string to isolate the package name
         PckgName=${PckgName#"Package "*}
         PckgRisk="$(echo $PckgAdvisory | cut -d'.' -f2)"    # For unknown reasons, ${string#"]. "*} didn't work?
@@ -830,14 +830,13 @@ function ParseArchAudit() {
             ( # Create second sub-shell to preserve variables for processing outside piped while loop
             GetTrueAppCounts # From file
             Column="0"
-            PckgAppcount="0"  #keeps count of number of applications affected by package cf AppCount
+            PckgAppCount="0"  #keeps count of number of applications affected by package cf AppCount
             while read AppNme; do
                 if [[ "$AppNme" == *"Packages that depend on"* ]] ; then
                         # We replaced whoneeds report intro. So, make pretty table header
                         DrawAdvisoryTableHeader
                     else
-                            PckgAppcount=$((PckgAppcount + 1))                # increments number of apps affected by package
-                            ### Check if AppListFile exists and that AppNme has a record
+                            PckgAppCount=$((PckgAppCount + 1))                          # inc app count dependant on package
                             if ! [ -a "$AppListFile" ] ; then                           # 'AppListFile' doesn't exist?
                                     AppListRecord=":$AppNme:0:0:0:0:0"                      # Format = ':AppName:C:H:M:L:U'
                                     AppCount=$((AppCount + 1))                              # Increment 'net' AppCount
@@ -849,17 +848,19 @@ function ParseArchAudit() {
                                 fi
                             fi
                             ### Above we have made sure AppListFile exists and Appnme has a record,now we need the fields
+                            ### Note1: As stated, first field is intentionaly empty
+                            ### Note2: We already have the 2nd field 'AppNme'
                             AppListRecordOld=$(grep ":$AppNme:" "$AppListFile")             # get old AppNme record
-                            AppFC="$(echo $AppListRecordOld | cut -d':' -f3)"               # Isolate the 2nd field
-                            AppFH="$(echo $AppListRecordOld | cut -d':' -f4)"               # Isolate the 3rd field
-                            AppFM="$(echo $AppListRecordOld | cut -d':' -f5)"               # Isolate the 4th field
-                            AppFL="$(echo $AppListRecordOld | cut -d':' -f6)"               # Isolate the 5th field
-                            AppFU="$(echo $AppListRecordOld | cut -d':' -f7)"               # Isolate the 6th field
+                            AppFC="$(echo $AppListRecordOld | cut -d':' -f3)"               # Isolate the 3rd field
+                            AppFH="$(echo $AppListRecordOld | cut -d':' -f4)"               # Isolate the 4th field
+                            AppFM="$(echo $AppListRecordOld | cut -d':' -f5)"               # Isolate the 5th field
+                            AppFL="$(echo $AppListRecordOld | cut -d':' -f6)"               # Isolate the 6th field
+                            AppFU="$(echo $AppListRecordOld | cut -d':' -f7)"               # Isolate the 7th field
                             ###
                             case $AppRisk in    ### increment relevant count
                                     "Low")
-                                        AppFL=$((AppFL + 1))                                # inc 'FL' field of 'AppListRecord'
-                                        LowAppCountG=$((LowAppCountG + 1))                  # increment gross count
+                                        AppFL=$((AppFL + 1))
+                                        LowAppCountG=$((LowAppCountG + 1))
                                         LowAppCountN=$(IncNetRiskcount ":$AppNme:" "$LowAppListFile" "$LowAppCountN");;
                                  "Medium")
                                         AppFM=$((AppFM + 1))
@@ -910,7 +911,7 @@ function ParseArchAudit() {
                         PrintFNewline
                 fi
             fi
-            if [[ $PckgAppcount == "0" ]]; then     # Creates an empty table row when there is no affected applications
+            if [[ $PckgAppCount == "0" ]]; then     # Creates an empty table row when there is no affected applications
                 PrintFSpace
                 PrintFBoxEdge
                 printf "%115s"
@@ -918,8 +919,8 @@ function ParseArchAudit() {
                 PrintFNewline
 
             fi
-            # PckgRecord consists of the fields ':PckgName:RiskClr:PckgRsk:SortRisk:PckgAppcount'
-            PckgRecord="$PckgRecord""$PckgAppcount"
+            # PckgRecord consists of the fields ':PckgName:RiskClr:PckgRsk:SortRisk:PckgAppCount'
+            PckgRecord="$PckgRecord""$PckgAppCount"
             echo $PckgRecord >> "$PckgListFile"
             #
             SaveTrueAppCounts                       # Update the true *AppCounts while still inside second pipe
