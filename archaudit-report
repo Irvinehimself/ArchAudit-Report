@@ -49,8 +49,8 @@ GnuLicence="http://www.gnu.org/licenses/"
 PathToTemp="/tmp/"
 
 ### Records
-PckgListFile="$PathToTemp""PckgListTmp.txt"         ### Package Format = ':PckgName:RskClr:PckgRsk:SortRisk:DepCount'
-AppListFile="$PathToTemp""AppListTmp.txt"           ### Apps with inherited advisories. Format ':AppNme:C:H:M:L:U'
+PckgListFile="$PathToTemp""PckgListTmp.txt"         ### Format = ':PckgName:RskClr:PckgRsk:SortRisk:DepCount'
+AppListFile="$PathToTemp""AppListTmp.txt"           ### Format = ':AppNme:C:H:M:L:U'
 
 ### ### Counters
 AdvisCountFile="$PathToTemp""AdvisCountTmp.txt"
@@ -99,6 +99,9 @@ Warning=$CrtclRsk"Warning:"$DefClr
 Note=$NoteClr"Note:"$DefClr
 Note1=$NoteClr"Note1:"$DefClr
 Note2=$NoteClr"Note2:"$DefClr
+
+### ### Char constants ### ###
+SpChr=" " # Used to highlight an added space in message strings
 
 ### ### ### ### ### ### ### End Constants ### ### ### ### ### ###
 
@@ -210,7 +213,7 @@ function TitleDate() {
     echo
     echo
     MakeTitleBox "57" "90" "ArchAudit WhoNeeds Report:   $(date)"
-    printf '$BldFce%-20s\n' "Raw arch-audit results:"
+    printf "$BldFce%-20s\n" "Raw arch-audit results:"
     printf "$DefClr\n"
     arch-audit | fold -w 120 - # Pipe wordwraps arch-audit output.No -s option forces break at 120 char, (not nearest space)
     echo
@@ -352,7 +355,7 @@ function DrawPckgListTableHeader() {
     ### Text line
     PrintFSpace
     PrintFBoxEdge
-    printf '%-28s' " Package"
+    printf '%-28s' "$SpChr""Package"
     PrintFBoxEdge
     printf '%-5s'
     printf '%-8s' "Risk"
@@ -389,7 +392,7 @@ function DrawPckgListTableFooter(){
     Advis="advisory"
     PrintFSpace
     PrintFBoxEdge
-    printf '%-60s' " Full details on all Arch Linux advisories can be found at:"
+    printf '%-60s' "$SpChr""Full details on all Arch Linux advisories can be found at:"
     printf "$HypLnk"
     printf '%-56s' "$ArchSecurity$Advis"
     PrintFBoxEdge
@@ -424,13 +427,13 @@ function GetPckgList() {
         #
         PrintFSpace; PrintFBoxEdge;
         printf "$PkgClr"
-        printf '%-28s' " $PckgName"
+        printf '%-28s' "$SpChr$PckgName"
         printf "$RiskClr"
         printf '%15s' "$PckgRsk"
         printf "$DefClr"
         printf '%4s' "$AppCount"
         printf "$HypLnk"
-        printf '%-69s' " $PckgIssue$PckgName"
+        printf '%-69s' "$SpChr$PckgIssue$PckgName"
         PrintFBoxEdge; PrintFNewline
     done
     DrawPckgListTableFooter
@@ -456,10 +459,10 @@ function DrawAppListTableHeader() {
     ### Text line
     PrintFSpace
     PrintFBoxEdge
-    printf '%-45s' " Application"
+    printf '%-45s' "$SpChr""Application"
     printf '%-12s' "Risk Tally"
     PrintFBoxEdge
-    printf '%-45s' " Application"
+    printf '%-45s' "$SpChr""Application"
     printf '%-12s' "Risk Tally"
     PrintFBoxEdge
     PrintFNewline
@@ -475,7 +478,7 @@ function DrawAppListTableHeader() {
 
 function DrawAppListTableFooter(){
     BoxLine=$(DrawLine "59" "─")
-    ### Botom box line
+    ### Bottom box line
     PrintFSpace
     PrintFLeftBtmCorn
     printf "$BoxLine"
@@ -488,7 +491,7 @@ function DrawAppListTableFooter(){
 function AppListPrintF() {
     PrintFBoxEdge
     printf "$AppClr"
-    printf '%-42s' " $AppNme"
+    printf '%-42s' "$SpChr$AppNme"
     printf "$CrtclRsk"
     printf '%3s' "$AppFC"
     printf "$HighRsk"
@@ -626,12 +629,12 @@ function AdvsTableFooter(){
 function AdvsPrintF() {
     AdvsTableIndent
     PrintFBoxEdge
-    printf '%-4s' " $1"         # Advisory count
-    printf "$2"                 # Risk colour
-    printf '%16s' "$3"          # Risk string/label
+    printf '%-4s' "$SpChr$1"            # Advisory count
+    printf "$2"                         # Risk colour
+    printf '%16s' "$3"                  # Risk string/label
     printf "$DefClr"
-    printf '%7s' "$4 "           # Net AppCount
-    printf '%7s' "$5 "          # Gross Appcount
+    printf '%7s' "$4""$SpChr"           # Net AppCount
+    printf '%7s' "$5""$SpChr"           # Gross Appcount
     PrintFBoxEdge
     PrintFNewline
 }
@@ -746,7 +749,7 @@ function DrawAdvisoryTableHeader(){
 }
 
 function DrawAdvisoryTableFooter(){
-    SentenceNoFormat=" The $1 advisory can be found at: $PckgIssue$1"
+    SentenceNoFormat="$SpChr""The $1 advisory can be found at: $PckgIssue$1"
     SentenceSize=${#SentenceNoFormat}
     LineEnd=$((115-SentenceSize))
     BoxLine=$(DrawLine "117" "─")
@@ -759,11 +762,11 @@ function DrawAdvisoryTableFooter(){
     ### Text line
     PrintFSpace
     PrintFBoxEdge
-    printf " The "
+    printf "$SpChr""The$SpChr"
     printf "$PkgClr"
     printf "$1 "
     printf "$DefClr"
-    printf "advisory can be found at: "
+    printf "advisory can be found at:$SpChr"
     printf "$HypLnk"
     printf "$PckgIssue$1"
     printf "%$LineEnd""s"
@@ -795,22 +798,22 @@ function ParseArchAudit() {
         ### Note, the advisory counts,(*AdvisCount,) are handled entirely within one pass of this shell.
         AdvisCount=$((AdvisCount + 1))                  # Increment the count of advisories
         case $PckgRisk in                               # Assign $RskClr, PckgRsk, SortRisk and increment relevant count
-                 " Low risk!")
+            "$SpChr""Low risk!")
                         RskClr=$LowRsk
                         LowAdvisCount=$((LowAdvisCount + 1))
                         AppRisk="Low"
                         PckgRecord=":$PckgName:$RskClr:Low Risk!:2:";;    # See below for explanation of PckgRecord fields
-              " Medium risk!")
+            "$SpChr""Medium risk!")
                         RskClr=$MedRsk
                         MediumAdvisCount=$((MediumAdvisCount + 1))
                         AppRisk="Medium"
                         PckgRecord=":$PckgName:$RskClr:Medium Risk!:3:";;
-                " High risk!")
+            "$SpChr""High risk!")
                         RskClr=$HighRsk
                         HighAdvisCount=$((HighAdvisCount + 1))
                         AppRisk="High"
                         PckgRecord=":$PckgName:$RskClr:High Risk!:4:";;
-            " Critical risk!")
+            "$SpChr""Critical risk!")
                         RskClr=$CrtclRsk
                         CrtclAdvisCount=$((CrtclAdvisCount + 1))
                         AppRisk="Critical"
@@ -885,7 +888,7 @@ function ParseArchAudit() {
                             if [[ "$Column" == "1" ]]; then
                                     PrintFSpace
                                     PrintFBoxEdge
-                                    printf "$AppClr%-39s" " $AppNme"
+                                    printf "$AppClr%-39s" "$SpChr$AppNme"
                                 else if [[ "$Column" == "2" ]]; then
                                         printf "$AppClr%-38s" "$AppNme"
                                     else

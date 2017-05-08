@@ -5,13 +5,16 @@
 * arch-audit (community)
 * whoneeds (pkgtools AUR  https://aur.archlinux.org/packages/pkgtools/)
 
+&nbsp;
+
 ### Contents:
 * What is ArchAudit-Report?
 * Features:
 * Installation:
 * Screenshots:
 
-<br><br>
+&nbsp;
+
 ### What is ArchAudit-Report?
 Okay, being honest, this utility is more informative than practical. However, it is very informative!
 
@@ -38,7 +41,8 @@ Generally, trying to switch between applications in the hope of avoiding package
 
 *For an interesting take on Linux advisories and how it has gone wrong with WebKitGTK2, see this blog post by Gnome developer Michael Catanzaro: https://blogs.gnome.org/mcatanzaro/2016/02/01/on-webkit-security-updates/*
 
-<br><br>
+&nbsp;
+
 ### Installation:
 Once I get some feedback, I will put it in the AUR. Until then, installation is a matter of personal choice. This post on the Arch forums discusses various installation options for bash shells: https://bbs.archlinux.org/viewtopic.php?id=165042
 
@@ -52,7 +56,8 @@ Similarly, do not confuse ‘/usr/local/bin/’ with ‘/usr/bin’.
 
 On a final note, when running ‘untrusted’😈 applications, a sandbox is a really good idea.  Firetools-0.9.46  has an excellent wizard which, (literally,)  allows you create a sandbox in seconds. Unfortunately, you will have to compile it yourself, since the AUR Firetools, (at version 0.9.44,) is out of date.
 
-<br><br>
+&nbsp;
+
 ### Screenshots:
 
 **Applications affected by an advisory:**
