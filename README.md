@@ -13,6 +13,7 @@
 * Installation:
 * Screenshots:
 * Addendum  on ShaCheckSums:
+* Release history
 
 <br><br>
 ### What is ArchAudit-Report?
@@ -46,12 +47,13 @@ Generally, trying to switch between applications in the hope of avoiding package
 <br><br>
 ### Installation:
 
-**Udate:** ArchAudit-Report is now available [from the AUR](https://aur.archlinux.org/packages/archaudit-report/)
+**Update:** ArchAudit-Report is now available [from the AUR](https://aur.archlinux.org/packages/archaudit-report/)
 
-
-Once I get some feedback, I will put it in the AUR. Until then, installation is a matter of personal choice. This post on the Arch forums discusses various installation options for bash shells: https://bbs.archlinux.org/viewtopic.php?id=165042
+If you don't wish to use my PCKGBUILD in the AUR, then this post on the Arch forums discusses various installation options for bash shells: https://bbs.archlinux.org/viewtopic.php?id=165042
 
 Primarily, the most important consideration is to check that the file "archaudit-report" has permission to run as an executable. I believe 'chmod 755  archaudit-report’ does the trick, (alternatively you can use your file-manager GUI 😅)
+
+Secondly, git repos are generally works in progress. Rather than clone the project, you should downoad the latest stable [release](https://github.com/Irvinehimself/ArchAudit-Report/releases).
 
 If your security model permits it, for testing, you can just drop the file into a terminal. For a full installation, (necessary to run ‘archaudit-report’ directly from the command line,) the easiest method is to copy, (as root,) ‘archaudit-report’ into ‘/usr/local/bin/’. Since this directory is already in  $PATH, nothing further should be needed.
 
@@ -65,7 +67,8 @@ On a final note, when running ‘untrusted’😈 applications, a sandbox is a r
 ### Screenshots:
 
 **Applications affected by an advisory:**
-![Advisory tables](/screenshots/Advisories.png?raw=true "Advisory Tables")
+![Advisory tables](/screenshots/Advisories.png?raw=true### Create git repo
+ "Advisory Tables")
 <br><br>
 
 **Summary overview:**
@@ -87,5 +90,9 @@ For reference, here is how you provide a checksum:
 1. Prepare the release as normal.
 2. Download and verify the tarball
 3. In terminal, enter 'sha256sum < $tarball' (or sha1sum, or whatever.)
-4. For ArchAudit-Report v1.0 tarball, the sha256sum is: **fd4559b866f73dd3ae6fb3f7e2a6bd36b3f14150fbd16e8af24c896fb5c4402c**
+4. For ArchAudit-Report v1.01 tarball, the sha256sum is: **3d78f9f92ee296e5cda42bbde096f9c394bc18a91fbd9446dc726d4b0c80574b**
 
+<br><br>
+### Release History:
+1. **ArchAudit-Report v1.01:**          Minor bug fix to UpdateFlag
+2. **ArchAudit-Report v1.0:**           First public release
