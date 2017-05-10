@@ -433,7 +433,7 @@ function GetPckgList() {
     ### record,) that consideration is not a problem. But, by adopting the convention bash wide, it greatly simplifies
     ### understanding the code and leaves room for future development
     ###
-    ### 'sort -t: -nr  -k6,6 -k7,7  "$PckgListFile" ' will sort the file by the 5th, '-k5' and 6th '-k6' field.
+    ### 'sort -t: -nr  -k6,6 -k7,7  "$PckgListFile" ' will sort the file by the 6th, '-k6' and 7th '-k7' field.
     ### The option '-t:' signifies that ':' is to be the field  separator.
     sort -t: -nr  -k6,6 -k7,7 "$PckgListFile" |\
     while read -r PckgRecord; do
