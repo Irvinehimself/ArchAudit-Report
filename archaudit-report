@@ -84,7 +84,7 @@ UndefAppListFile="$PathToTemp""UndefAppListTmp.txt"
 # (For an expansive colour chart see http://misc.flogisoft.com/bash/tip_colors_and_formatting)
 BldFce='\e[1m'
 PkgClr='\e[01;32m'          # green
-PcgClrUpDte='\e[38;5;33m'  # purple-ish
+PcgUpDteClr='\e[38;5;33m'  # purple-ish
 DefClr='\e[0m'              # Default white colour
 LowRsk='\e[38;5;148m'       # green yellow
 MedRsk='\e[38;5;11m'        # light yellow
@@ -393,9 +393,9 @@ function DrawPckgListTableFooter(){
     Advis="advisory"
     PrintFSpace
     PrintFBoxEdge
-    printf '%-60s' "$SpChr""Full details on all Arch Linux advisories can be found at:"
+    printf '%-50s' "$SpChr""For details on all Arch Linux advisories, visit:"
     printf "$HypLnk"
-    printf '%-56s' "$ArchSecurity$Advis"
+    printf '%-66s' "$ArchSecurity$Advis"
     PrintFBoxEdge
     PrintFNewline
     ### Divider Outline
@@ -407,12 +407,12 @@ function DrawPckgListTableFooter(){
     ### Text line
     PrintFSpace
     PrintFBoxEdge
-    printf "$SpChr""For details of updates, "
-    printf "$PcgClrUpDte"
-    printf ">>"
+    printf "$SpChr""For details of advisories fixed by an update, i.e '"
+    printf "$PcgUpDteClr"
+    printf " >> "
     printf "$DefClr"
-    printf ", see package advisory above"
-    printf '%-61s'
+    printf "', see package advisory above."
+    printf '%-30s'
     PrintFBoxEdge
     PrintFNewline
     ### Bottom box outline
@@ -446,8 +446,8 @@ function GetPckgList() {
         AppCount="$(echo $PckgRecord | cut -d':' -f7)"
         #
         PrintFSpace; PrintFBoxEdge;
-        printf "$PkgUpDtStatus"
-        if [[ "$PkgUpDtStatus" == "$PcgClrUpDte" ]] ; then
+        printf "$PkgUpDtStatus"                                 # $PkgUpDtStatus is either the $PcgUpDteClr or $PkgClr
+        if [[ "$PkgUpDtStatus" == "$PcgUpDteClr" ]] ; then
                 printf '%-28s' "$SpChr$UpDt$PckgName"
             else
                     printf '%-28s' "$SpChr$PckgName"
@@ -764,7 +764,7 @@ function IncNetRiskcount() {
 
 function SetRecordUpdateFlag() {
     if [[ "$1" != "" ]] ; then
-            PkgUpDtStatus="$PcgClrUpDte"
+            PkgUpDtStatus="$PcgUpDteClr"
         else
                 PkgUpDtStatus="$PkgClr"
     fi
