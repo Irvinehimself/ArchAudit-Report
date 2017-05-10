@@ -67,8 +67,7 @@ On a final note, when running ‘untrusted’😈 applications, a sandbox is a r
 ### Screenshots:
 
 **Applications affected by an advisory:**
-![Advisory tables](/screenshots/Advisories.png?raw=true### Create git repo
- "Advisory Tables")
+![Advisory tables](/screenshots/Advisories.png?raw=true "Create git repo Advisory Tables")
 <br><br>
 
 **Summary overview:**
