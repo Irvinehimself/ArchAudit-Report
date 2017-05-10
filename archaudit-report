@@ -84,6 +84,7 @@ UndefAppListFile="$PathToTemp""UndefAppListTmp.txt"
 # (For an expansive colour chart see http://misc.flogisoft.com/bash/tip_colors_and_formatting)
 BldFce='\e[1m'
 PkgClr='\e[01;32m'          # green
+PcgClrUpDte='\e[38;5;33m'  # purple-ish
 DefClr='\e[0m'              # Default white colour
 LowRsk='\e[38;5;148m'       # green yellow
 MedRsk='\e[38;5;11m'        # light yellow
@@ -397,6 +398,23 @@ function DrawPckgListTableFooter(){
     printf '%-56s' "$ArchSecurity$Advis"
     PrintFBoxEdge
     PrintFNewline
+    ### Divider Outline
+    PrintFSpace
+    PrintFLeftJunction
+    printf "$BoxLine"
+    PrintFRghtJunction
+    PrintFNewline
+    ### Text line
+    PrintFSpace
+    PrintFBoxEdge
+    printf "$SpChr""For details of updates, "
+    printf "$PcgClrUpDte"
+    printf ">>"
+    printf "$DefClr"
+    printf ", see package advisory above"
+    printf '%-61s'
+    PrintFBoxEdge
+    PrintFNewline
     ### Bottom box outline
     PrintFSpace
     PrintFLeftBtmCorn
@@ -406,28 +424,34 @@ function DrawPckgListTableFooter(){
 }
 
 function GetPckgList() {
+    UpDt=">> "
     echo
     DrawPckgListTableHeader
-    ### PckgRecord consists of the fields ':PckgName:RiskClr:PckgRsk:SortRisk:PckgAppCount'
+    ### PckgRecord consists of the fields ':PckgName:PkgUpDtStatus:RiskClr:PckgRsk:SortRisk:PckgAppCount'
     ### Note: The 1st field is empty. Other records in this bash use the empty field trick to wrap the package name in
     ### double colons. This is to avoid confusing 'Doe' with 'Jane-Doe'/'John-Doe'. Technical, (with this particular
     ### record,) that consideration is not a problem. But, by adopting the convention bash wide, it greatly simplifies
     ### understanding the code and leaves room for future development
     ###
-    ### 'sort -t: -nr -k5,5 -k6,6  "$PckgListFile" ' will sort the file by the 5th, '-k5' and 6th '-k6' field.
+    ### 'sort -t: -nr  -k6,6 -k7,7  "$PckgListFile" ' will sort the file by the 5th, '-k5' and 6th '-k6' field.
     ### The option '-t:' signifies that ':' is to be the field  separator.
-    sort -t: -nr -k5,5 -k6,6 "$PckgListFile" |\
+    sort -t: -nr  -k6,6 -k7,7 "$PckgListFile" |\
     while read -r PckgRecord; do
         ### Note the 5th field, SortRisk, is only for numeric sorting.
-        PckgName="$(echo $PckgRecord | cut -d':' -f2)"  # Isolate the 1st non empty field
-         RiskClr="$(echo $PckgRecord | cut -d':' -f3)"  # Isolate the 2nd non empty  field
-         PckgRsk="$(echo $PckgRecord | cut -d':' -f4)"  # Isolate the 3rd non empty  field
-        SortRisk="$(echo $PckgRecord | cut -d':' -f5)"  ### Note this field is used purely for numeric sorting
-        AppCount="$(echo $PckgRecord | cut -d':' -f6)"  # Isolate the 5th non empty  field
+        PckgName="$(echo $PckgRecord | cut -d':' -f2)"
+   PkgUpDtStatus="$(echo $PckgRecord | cut -d':' -f3)"
+         RiskClr="$(echo $PckgRecord | cut -d':' -f4)"
+         PckgRsk="$(echo $PckgRecord | cut -d':' -f5)"
+        SortRisk="$(echo $PckgRecord | cut -d':' -f6)"  ### Note this field is used purely for numeric sorting
+        AppCount="$(echo $PckgRecord | cut -d':' -f7)"
         #
         PrintFSpace; PrintFBoxEdge;
-        printf "$PkgClr"
-        printf '%-28s' "$SpChr$PckgName"
+        printf "$PkgUpDtStatus"
+        if [[ "$PkgUpDtStatus" == "$PcgClrUpDte" ]] ; then
+                printf '%-28s' "$SpChr$UpDt$PckgName"
+            else
+                    printf '%-28s' "$SpChr$PckgName"
+        fi
         printf "$RiskClr"
         printf '%15s' "$PckgRsk"
         printf "$DefClr"
@@ -738,6 +762,15 @@ function IncNetRiskcount() {
     echo "$Ncount"                                      # return result to subshell
 }
 
+function SetRecordUpdateFlag() {
+    if [[ "$1" != "" ]] ; then
+            PkgUpDtStatus="$PcgClrUpDte"
+        else
+                PkgUpDtStatus="$PkgClr"
+    fi
+    echo "$PkgUpDtStatus"                   # Return value to subshell
+}
+
 function DrawAdvisoryTableHeader(){
     BoxLine=$(DrawLine "117" "─")
     ### Botom box line
@@ -790,42 +823,47 @@ function ParseArchAudit() {
         PckgName=${PckgName#"Package "*}
         PckgRisk="$(echo $PckgAdvisory | cut -d'.' -f2)"    # For unknown reasons, ${string#"]. "*} didn't work?
         if [[ "$PckgRisk" == *" Update to "* ]] ; then
-            UpDateFlag="$(echo $PckgRisk | cut -d'!' -f2)"  # Isolate update string. (No update = empty string.)
-            PckgRisk="$(echo $PckgRisk | cut -d'!' -f1)""!" # Remove update string, if it exists, from $PckgRisk
+            UpDateFlag=">>$(echo $PckgAdvisory | cut -d'!' -f2)"   # Create update string. (No update = empty string.)
+            PckgRisk="$SpChr$(echo $PckgRisk | cut -d'!' -f1)!"     # Remove update string, if it exists, from $PckgRisk
         fi
         #
         #
         ### Note, the advisory counts,(*AdvisCount,) are handled entirely within one pass of this shell.
         AdvisCount=$((AdvisCount + 1))                  # Increment the count of advisories
-        case $PckgRisk in                               # Assign $RskClr, PckgRsk, SortRisk and increment relevant count
+        case $PckgRisk in                               # Assign $PkgUpDtStatus, $RskClr, PckgRsk, SortRisk and inc count
             "$SpChr""Low risk!")
                         RskClr=$LowRsk
                         LowAdvisCount=$((LowAdvisCount + 1))
                         AppRisk="Low"
-                        PckgRecord=":$PckgName:$RskClr:Low Risk!:2:";;    # See below for explanation of PckgRecord fields
+                        PkgUpDtStatus="$(SetRecordUpdateFlag $UpDateFlag)"
+                        PckgRecord=":$PckgName:$PkgUpDtStatus:$RskClr:Low Risk!:2:";;    # See below for explanation of PckgRecord fields
             "$SpChr""Medium risk!")
                         RskClr=$MedRsk
                         MediumAdvisCount=$((MediumAdvisCount + 1))
                         AppRisk="Medium"
-                        PckgRecord=":$PckgName:$RskClr:Medium Risk!:3:";;
+                        PkgUpDtStatus="$(SetRecordUpdateFlag $UpDateFlag)"
+                        PckgRecord=":$PckgName:$PkgUpDtStatus:$RskClr:Medium Risk!:3:";;
             "$SpChr""High risk!")
                         RskClr=$HighRsk
                         HighAdvisCount=$((HighAdvisCount + 1))
                         AppRisk="High"
-                        PckgRecord=":$PckgName:$RskClr:High Risk!:4:";;
+                        PkgUpDtStatus="$(SetRecordUpdateFlag $UpDateFlag)"
+                        PckgRecord=":$PckgName:$PkgUpDtStatus:$RskClr:High Risk!:4:";;
             "$SpChr""Critical risk!")
                         RskClr=$CrtclRsk
                         CrtclAdvisCount=$((CrtclAdvisCount + 1))
                         AppRisk="Critical"
-                        PckgRecord=":$PckgName:$RskClr:Critical Risk!:5:";;
+                        PkgUpDtStatus="$(SetRecordUpdateFlag $UpDateFlag)"
+                        PckgRecord=":$PckgName:$PkgUpDtStatus:$RskClr:Critical Risk!:5:";;
                             *)
                         RskClr=$UnDefRsk
                         UndefAdvisCount=$((UndefAdvisCount + 1))
                         AppRisk="UnDef"
-                        PckgRecord=":$PckgName:$RskClr:Undefined Risk!:1:";;
+                        PkgUpDtStatus="$(SetRecordUpdateFlag $UpDateFlag)"
+                        PckgRecord=":$PckgName:$PkgUpDtStatus:$RskClr:Undefined Risk!:1:";;
         esac # End case statement
         echo
-        echo -e "The following applications depend on $PkgClr$PckgName$DefClr, which is rated $RskClr$PckgRisk$DefClr $UpDateFlag"
+        echo -e "The following applications depend on $PkgUpDtStatus$PckgName$DefClr, which is rated $RskClr$PckgRisk $PkgUpDtStatus$UpDateFlag$DefClr"
         whoneeds $PckgName | \
             ( # Create second sub-shell to preserve variables for processing outside piped while loop
             GetTrueAppCounts # From file
