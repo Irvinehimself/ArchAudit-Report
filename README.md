@@ -12,6 +12,7 @@
 * Notes:
 * Installation:
 * Screenshots:
+* Addendum  on ShaCheckSums:
 
 <br><br>
 ### What is ArchAudit-Report?
@@ -44,6 +45,10 @@ Generally, trying to switch between applications in the hope of avoiding package
 
 <br><br>
 ### Installation:
+
+**Udate:** ArchAudit-Report is now available [from the AUR](https://aur.archlinux.org/packages/archaudit-report/)
+
+
 Once I get some feedback, I will put it in the AUR. Until then, installation is a matter of personal choice. This post on the Arch forums discusses various installation options for bash shells: https://bbs.archlinux.org/viewtopic.php?id=165042
 
 Primarily, the most important consideration is to check that the file "archaudit-report" has permission to run as an executable. I believe 'chmod 755  archaudit-report’ does the trick, (alternatively you can use your file-manager GUI 😅)
@@ -54,7 +59,7 @@ Note, it is **ABSOLUTELY NOT** necessary to run this shell with sudo!
 
 Similarly, do not confuse ‘/usr/local/bin/’ with ‘/usr/bin’.
 
-On a final note, when running ‘untrusted’😈 applications, a sandbox is a really good idea.  Firetools-0.9.46  has an excellent wizard which, (literally,)  allows you create a sandbox in seconds. Unfortunately, you will have to compile it yourself, since the AUR Firetools, (at version 0.9.44,) is out of date.
+On a final note, when running ‘untrusted’😈 applications, a sandbox is a really good idea.  Firetools-0.9.46  has an excellent wizard which, (literally,)  allows you create a sandbox in seconds. Unfortunately,(at the time of writing,) you will have to compile it yourself, since the AUR Firetools, (at version 0.9.44,) was out of date.
 
 <br><br>
 ### Screenshots:
@@ -73,3 +78,14 @@ On a final note, when running ‘untrusted’😈 applications, a sandbox is a r
 
 **Ranked list of affected applications:**
 ![Application list](/screenshots/ApplicationList.png?raw=true "Application List")
+<br><br>
+
+### Addendum  on ShaCheckSums for GitHub packages:
+Okay,not really relvant to ArchAudit-Report, but, while writing the PKGBUILD for the AUR, I really struggled figuring how to get the "sha256sum" for the release tarball. From my Google searches, I am not alone with this problem. I found many request for developers to provide sha-check-sums, but no details on how to do it.
+
+For reference, here is how you provide a checksum:
+1. Prepare the release as normal.
+2. Download and verify the tarball
+3. In terminal, enter 'sha256sum < $tarball' (or sha1sum, or whatever.)
+4. For ArchAudit-Report v1.0 tarball, the sha256sum is: **fd4559b866f73dd3ae6fb3f7e2a6bd36b3f14150fbd16e8af24c896fb5c4402c**
+
