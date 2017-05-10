@@ -407,12 +407,12 @@ function DrawPckgListTableFooter(){
     ### Text line
     PrintFSpace
     PrintFBoxEdge
-    printf "$SpChr""For details of advisories fixed by an update, i.e '"
+    printf "$SpChr""For details of advisories fixed by an update, (indcated by: '"
     printf "$PcgUpDteClr"
-    printf " >> "
+    printf ">>"
     printf "$DefClr"
-    printf "', see package advisory above."
-    printf '%-30s'
+    printf "',) see the relevant package advisory above."
+    printf '%-8s'
     PrintFBoxEdge
     PrintFNewline
     ### Bottom box outline
