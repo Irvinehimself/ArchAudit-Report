@@ -21,8 +21,6 @@
 # along with ArchAudit-Report.  If not, see <http://www.gnu.org/licenses/>.
 ###############################################
 
-
-
 ### ### ### Dependencies ### ### ###
 
 ### arch-audit (community)
@@ -100,6 +98,7 @@ Warning=$CrtclRsk"Warning:"$DefClr
 Note=$NoteClr"Note:"$DefClr
 Note1=$NoteClr"Note1:"$DefClr
 Note2=$NoteClr"Note2:"$DefClr
+About=$NoteClr"About:"$DefClr
 
 ### ### Char constants ### ###
 SpChr=" " # Used to highlight an added space in message strings
@@ -228,6 +227,8 @@ function Information() {
     ###
     GPLString="This software is distributed under the GPL v3 license in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details: $HypLnk$GnuLicence$DefClr"
     ###
+    echo
+echo -e "$About ArchAudit-Report v1.02-rc.01"
     echo
     echo -e "$Warning"
     echo -e "$WarnString" | fold -sw 120 -
