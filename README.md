@@ -89,9 +89,11 @@ For reference, here is how you provide a checksum:
 1. Prepare the release as normal.
 2. Download and verify the tarball
 3. In terminal, enter 'sha256sum < $tarball' (or sha1sum, or whatever.)
-4. For ArchAudit-Report v1.01 tarball, the sha256sum is: **3d78f9f92ee296e5cda42bbde096f9c394bc18a91fbd9446dc726d4b0c80574b**
 
 <br><br>
 ### Release History:
-1. **ArchAudit-Report v1.01:**          Minor bug fix to UpdateFlag
-2. **ArchAudit-Report v1.0:**           First public release
+1. **ArchAudit-Report [v1.01](https://github.com/Irvinehimself/ArchAudit-Report/archive/v1.01.tar.gz):**          Minor bug fix to UpdateFlag
+    * Tarball sha256 = **3d78f9f92ee296e5cda42bbde096f9c394bc18a91fbd9446dc726d4b0c80574b**
+2. **ArchAudit-Report [v1.0](https://github.com/Irvinehimself/ArchAudit-Report/archive/v1.0.tar.gz):**           First public release
+    * Tarball sha256 = **fd4559b866f73dd3ae6fb3f7e2a6bd36b3f14150fbd16e8af24c896fb5c4402c**
+
