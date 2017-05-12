@@ -93,6 +93,9 @@ For reference, here is how you provide a checksum:
 
 <br><br>
 ### Release History:
+1. **ArchAudit-Report [v1.02](https://github.com/Irvinehimself/ArchAudit-Report/archive/v1.02.tar.gz)**
+    * Some minor cosmetic improvements. But, most importantly, it adds "About: Version" to the infobox.
+    * Tarball sha256 = **99dbd9ecbed70ab806f0c228e3f3c4968fdd9941cc0faac4209c9959c16ade21**
 1. **ArchAudit-Report [v1.01](https://github.com/Irvinehimself/ArchAudit-Report/archive/v1.01.tar.gz):**
     * Minor bug fix to UpdateFlag
     * Tarball sha256 = **3d78f9f92ee296e5cda42bbde096f9c394bc18a91fbd9446dc726d4b0c80574b**
