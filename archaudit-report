@@ -47,7 +47,7 @@ GnuLicence="http://www.gnu.org/licenses/"
 PathToTemp="/tmp/"
 
 ### Records
-PckgListFile="$PathToTemp""PckgListTmp.txt"         ### Format = ':PckgName:RskClr:PckgRsk:SortRisk:DepCount'
+PckgListFile="$PathToTemp""PckgListTmp.txt"         ### Format = ':PckgName:PkgUpDtStatus:RskClr:PckgRsk:SortRisk:DepCount'
 AppListFile="$PathToTemp""AppListTmp.txt"           ### Format = ':AppNme:C:H:M:L:U'
 
 ### ### Counters
@@ -82,7 +82,7 @@ UndefAppListFile="$PathToTemp""UndefAppListTmp.txt"
 # (For an expansive colour chart see http://misc.flogisoft.com/bash/tip_colors_and_formatting)
 BldFce='\e[1m'
 PkgClr='\e[01;32m'          # green
-PcgUpDteClr='\e[38;5;33m'  # purple-ish
+PckgUpDateClr='\e[38;5;33m' # purple-ish
 DefClr='\e[0m'              # Default white colour
 LowRsk='\e[38;5;148m'       # green yellow
 MedRsk='\e[38;5;11m'        # light yellow
@@ -94,7 +94,10 @@ NoteClr='\e[38;5;81m'       # pale blue
 AppClr='\e[38;5;104m'       # light mauve
 
 ### ### Char constants ### ###
-SpChr=" " # Used to highlight an added space in message strings
+SpChr=" "           # Used to highlight an added space in strings
+ScrnWidth="120"     # Assumed screen width of 120 char
+TbleWidth="118"     # Allows 2 char for a blank space each side of table
+LineLength="116"    # Allows 2 char for table borders
 
 ### ### ### ### ### ### ### End Constants ### ### ### ### ### ###
 
@@ -117,20 +120,8 @@ function DrawLine() {
     if [[ "$DrawChar" == "" ]] ; then
         DrawChar="*"
     fi
-    DrwLne=$(printf "%-$DrawLength""s" "$DrawChar")
+    DrwLne=$(printf '%-'"$DrawLength"'s' "$DrawChar")
     echo "${DrwLne// /$DrawChar}"
-}
-
-function MakeTitleBox() {
-    echo
-    # MakeTitleBox "15" "67" "WhoNeeds report"
-    UnderLine=$(DrawLine "$1" "*")
-    printf "$BldFce"
-    printf "%$2s\n" "$UnderLine"
-    printf "%$2s\n" "$3"
-    printf "%$2s" "$UnderLine"
-    printf "$DefClr\n"
-    #echo
 }
 
 function PrintFBoxLine() {
@@ -189,7 +180,7 @@ function PrintFCrssJunction() {
 }
 
 function PrintFSpace() {
-    printf " "
+    printf "$SpChr"
 }
 
 function PrintFNewline() {
@@ -198,6 +189,8 @@ function PrintFNewline() {
 
 function PrintFColour() {
     printf "$1"
+    # Essentially, the length/justify parameter, $3, is optional
+    # ie compare-- PrintFColour "$NoteClr" "$AboutNoFormat" --with-- PrintFColour "$RiskClr" "$PckgRsk" '%15s --'
     if [[ "$3" == "" ]] ; then
             printf "$2"
         else
@@ -207,7 +200,7 @@ function PrintFColour() {
 }
 
 function DrawBoxTopLine(){
-    BoxLine=$(DrawLine "118" "─")
+    BoxLine=$(DrawLine "$TbleWidth" "─")
     ### Top box outline
     PrintFSpace
     PrintFLeftTopCorn
@@ -217,7 +210,7 @@ function DrawBoxTopLine(){
 }
 
 function DrawBoxBottomLine(){
-    BoxLine=$(DrawLine "118" "─")
+    BoxLine=$(DrawLine "$TbleWidth" "─")
     ### Bottom box outline
     PrintFSpace
     PrintFLeftBtmCorn
@@ -227,7 +220,7 @@ function DrawBoxBottomLine(){
 }
 
 function DrawBoxJunctionLine(){
-    BoxLine=$(DrawLine "118" "─")
+    BoxLine=$(DrawLine "$TbleWidth" "─")
     ### Junction box outline
     PrintFSpace
     PrintFLeftJunction
@@ -239,7 +232,7 @@ function DrawBoxJunctionLine(){
 function DrawEmptyLine() {
     PrintFSpace
     PrintFBoxEdge
-    printf "%116s"
+    printf '%'"$LineLength"'s'
     PrintFBoxEdge
     PrintFNewline
 }
@@ -249,35 +242,55 @@ function DrawEmptyLine() {
 
 ### ### ### Titles and Notes ### ### ###
 
+function MakeTitleBox() {
+    echo
+    ### Calculate position of end of string for it to be in centre of a $ScrnWidth char wide terminal
+    Title="$1"
+    TitleSize=${#Title}
+    MidStart=$((ScrnWidth-TitleSize))
+    MidStart=$((MidStart / 2))
+    LineEnd=$((MidStart+TitleSize))
+    ###
+    UnderLine=$(DrawLine "$TitleSize" "=")
+    PrintFColour "$BldFce" "$Title" '%'"$LineEnd"'s'
+    PrintFNewline
+    PrintFColour "$BldFce" "$UnderLine" '%'"$LineEnd"'s'
+    PrintFNewline
+}
+
 function TitleDate() {
     echo
     echo
-    MakeTitleBox "57" "90" "ArchAudit WhoNeeds Report:   $(date)"
+    MakeTitleBox "ArchAudit WhoNeeds Report:   $(date)"
+    echo
+    echo
     PrintFColour "$BldFce" "Raw arch-audit results:"
     PrintFNewline
-    arch-audit | fold -sw 120 - # Pipe wordwraps arch-audit output.No -s option forces break at 120 char, (not nearest space)
     echo
+    # Pipe wordwraps output at $ScrnWidth char. -s option forces break at nearest space. Note trailing -
+    arch-audit | fold -sw "$ScrnWidth" -
 }
 
 function Information() {
-    ### Calculate the mid point for version string, (remeber it's length is changed by the UpdateGit bash)
+    ### Calculate the mid point for version string, (remeber version string is set by my UpdateGit bash)
     AboutNoFormat="About:"
-AboutVersion="$SpChr""ArchAudit-Report v1.02"
+    AbtNFsze=${#AboutNoFormat}
+AboutVersion="$SpChr""ArchAudit-Report v1.03-rc.01"
     AboutString="$AboutNoFormat$AboutVersion"
     AboutSize=${#AboutString}
-    MidStart=$((116-AboutSize))
+    MidStart=$((LineLength-AboutSize))
     MidStart=$((MidStart / 2))
-    LineEnd=$((110-MidStart))
-    ### Remmember, diferent lengths,(ie 116, 110) are because we need to allow for 'About:' already being printed.See below.
+    LineEnd=$((LineLength-AbtNFsze-MidStart))
+    ### Remmember, we need to allow for 'About:' already being printed.See below.
     echo
     echo "Information:"
     ### AboutBox
     DrawBoxTopLine
     PrintFSpace
     PrintFBoxEdge
-    printf "%-$MidStart"'s'
+    printf '%-'"$MidStart"'s'
     PrintFColour "$NoteClr" "$AboutNoFormat"
-    printf "%-$LineEnd"'s' "$AboutVersion"
+    printf '%-'"$LineEnd"'s' "$AboutVersion"
     PrintFBoxEdge
     PrintFNewline
     DrawBoxJunctionLine
@@ -292,13 +305,13 @@ AboutVersion="$SpChr""ArchAudit-Report v1.02"
     ###
     PrintFSpace
     PrintFBoxEdge
-    printf '%-116s' "$SpChr""advisories. It is not meant to be a measure of how secure a system is. To measure the overall level of system"
+    printf '%-'"$LineLength"'s' "$SpChr""advisories. It is not meant to be a measure of how secure a system is. To measure the overall level of system"
     PrintFBoxEdge
     PrintFNewline
     ###
     PrintFSpace
     PrintFBoxEdge
-    printf '%-116s' "$SpChr""hardness, use Lynis or some other security auditing tool."
+    printf '%-'"$LineLength"'s' "$SpChr""hardness, use Lynis or some other security auditing tool."
     PrintFBoxEdge
     PrintFNewline
     DrawEmptyLine
@@ -312,13 +325,13 @@ AboutVersion="$SpChr""ArchAudit-Report v1.02"
     ###
     PrintFSpace
     PrintFBoxEdge
-    printf '%-116s' "$SpChr""preferred font to Monospace. In the same vein, I expect the terminal to have a column width of at least 120"
+    printf '%-'"$LineLength"'s' "$SpChr""preferred font to Monospace. In the same vein, I expect the terminal to have a column width of at least 120"
     PrintFBoxEdge
     PrintFNewline
     ###
     PrintFSpace
     PrintFBoxEdge
-    printf '%-116s' "$SpChr""characters."
+    printf '%-'"$LineLength"'s' "$SpChr""characters."
     PrintFBoxEdge
     PrintFNewline
     DrawEmptyLine
@@ -332,7 +345,7 @@ AboutVersion="$SpChr""ArchAudit-Report v1.02"
     ###
     PrintFSpace
     PrintFBoxEdge
-    printf '%-116s' "$SpChr""WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU"
+    printf '%-'"$LineLength"'s' "$SpChr""WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU"
     PrintFBoxEdge
     PrintFNewline
     ###
@@ -391,12 +404,12 @@ function GetTrueAdvisCount() {
 }
 
 function SaveTrueAdvisCount() {
-    echo    "$AdvisCount" > "$AdvisCountFile"
+    echo "$AdvisCount" > "$AdvisCountFile"
     echo "$CrtclAdvisCount" > "$CrtclAdvisCountFile"
-    echo     "$HighAdvisCount" > "$HighAdvisCountFile"
-    echo   "$MediumAdvisCount" > "$MediumAdvisCountFile"
-    echo    "$LowAdvisCount" > "$LowAdvisCountFile"
-    echo    "$UndefAdvisCount" > "$UndefAdvisCountFile"
+    echo "$HighAdvisCount" > "$HighAdvisCountFile"
+    echo "$MediumAdvisCount" > "$MediumAdvisCountFile"
+    echo "$LowAdvisCount" > "$LowAdvisCountFile"
+    echo "$UndefAdvisCount" > "$UndefAdvisCountFile"
 }
 
 function RemoveTemporaryFiles() {
@@ -445,10 +458,6 @@ function RemoveTemporaryFiles() {
 ### ### ### PckgList Stuff ### ### ###
 
 function DrawPckgListTableHeader() {
-    BoxLine1=$(DrawLine "30" "─")
-    BoxLine2=$(DrawLine "15" "─")
-    BoxLine3=$(DrawLine "6" "─")
-    BoxLine4=$(DrawLine "70" "─")
     echo "Here is a ranked list of the advisories that affect you:"
     DrawBoxTopLine
     ### Text line
@@ -480,7 +489,7 @@ function DrawPckgListTableFooter(){
     PrintFSpace
     PrintFBoxEdge
     printf "$SpChr""For details of advisories fixed by an update, (indcated by: '"
-    PrintFColour "$PcgUpDteClr" ">>"
+    PrintFColour "$PckgUpDateClr" ">>"
     printf "',) see the relevant package advisory above."
     printf '%-8s'
     PrintFBoxEdge
@@ -489,7 +498,6 @@ function DrawPckgListTableFooter(){
 }
 
 function GetPckgList() {
-    UpDt=">> "
     echo
     DrawPckgListTableHeader
     ### PckgRecord consists of the fields ':PckgName:PkgUpDtStatus:RiskClr:PckgRsk:SortRisk:PckgAppCount'
@@ -511,19 +519,19 @@ function GetPckgList() {
         AppCount="$(echo $PckgRecord | cut -d':' -f7)"
         #
         PrintFSpace; PrintFBoxEdge;
-        printf "$PkgUpDtStatus"                                 # $PkgUpDtStatus is either the $PcgUpDteClr or $PkgClr
-        if [[ "$PkgUpDtStatus" == "$PcgUpDteClr" ]] ; then      # Note, because of record, simpler not to use PrintFColour
-                printf '%-28s' "$SpChr$UpDt$PckgName"
+        if [[ "$PkgUpDtStatus" == "$PkgClr" ]] ; then
+                UpDtYesNo="$SpChr$PckgName"
             else
-                    printf '%-28s' "$SpChr$PckgName"
+                    UpDtYesNo="$SpChr"">>""$PckgName"
         fi
+        PrintFColour "$PkgUpDtStatus" "$UpDtYesNo" '%-28s'
         PrintFColour "$RiskClr" "$PckgRsk" '%15s'
         printf '%4s' "$AppCount"
         PrintFColour "$HypLnk" "$SpChr$PckgIssue$PckgName" '%-69s'
         PrintFBoxEdge; PrintFNewline
     done
     DrawPckgListTableFooter
-    echo -e "$DefClr" # Restore default colour and create line break
+    echo # create line break
 }
 
 ### ### ###  End PckgList Stuff ### ### ###
@@ -548,19 +556,12 @@ function DrawAppListTableHeader() {
 }
 
 function AppListPrintF() {
-    # Again, because its an ordered list, cleaner not to use PrintFColour
-    printf "$AppClr"
-    printf '%-43s' "$SpChr$AppNme"
-    printf "$CrtclRsk"
-    printf '%3s' "$AppFC"
-    printf "$HighRsk"
-    printf '%3s' "$AppFH"
-    printf "$MedRsk"
-    printf '%3s' "$AppFM"
-    printf "$LowRsk"
-    printf '%3s' "$AppFL"
-    printf "$UnDefRsk"
-    printf '%3s' "$AppFU"
+    PrintFColour "$AppClr" "$SpChr$AppNme" '%-43s'
+    PrintFColour "$CrtclRsk" "$AppFC" '%3s'
+    PrintFColour "$HighRsk"  "$AppFH" '%3s'
+    PrintFColour "$MedRsk"   "$AppFM" '%3s'
+    PrintFColour "$LowRsk"   "$AppFL" '%3s'
+    PrintFColour "$UnDefRsk" "$AppFU" '%3s'
 }
 
 function GetApplist() {
@@ -714,7 +715,7 @@ function GetSummaryList(){
     SummaryTableFooter
     #
     PrintFColour "$NoteClr" "Note on gross and net counts:" '%34s'
-    printf "%76s\n" " Applications have multiple dependencies. If an applications has two or more"
+    printf "%76s\n" "Applications have multiple dependencies. If an applications has two or more"
     printf '%114s\n' "dependencies with advisories, double counting gives an inflated count of affected applications. Even so, this"
     printf '%114s\n' "'gross' count still contains valuable information. On the other hand, the 'net' count,  which does not double"
     printf '%85s\n' "count, may be considered a true count of applications with inherited advisories."
@@ -729,11 +730,11 @@ function ReportSummary() {
     GetTrueAdvisCount
     GetTrueAppCounts
     # Commence report summary
-    MakeTitleBox "7" "60" "Summary"
+    MakeTitleBox "Summary"
     GetSummaryList
     GetPckgList
     GetApplist
-    MakeTitleBox "10" "65" "End Report"
+    MakeTitleBox "End Report"
     # Clean up temporary files
     RemoveTemporaryFiles
 }
@@ -796,7 +797,7 @@ function IncNetRiskcount() {
 
 function SetRecordUpdateFlag() {
     if [[ "$1" != "" ]] ; then
-            PkgUpDtStatus="$PcgUpDteClr"
+            PkgUpDtStatus="$PckgUpDateClr"
         else
                 PkgUpDtStatus="$PkgClr"
     fi
@@ -807,8 +808,8 @@ function SetRecordUpdateFlag() {
 function DrawAdvisoryTableFooter(){
     SentenceNoFormat="$SpChr""The $1 advisory can be found at: $PckgIssue$1"
     SentenceSize=${#SentenceNoFormat}
-    LineEnd=$((116-SentenceSize))
-    BoxLine=$(DrawLine "118" "─")
+    LineEnd=$((LineLength-SentenceSize))
+    BoxLine=$(DrawLine "$TbleWidth" "─")
     ### Top outline
     PrintFSpace
     PrintFLeftJunction
@@ -822,7 +823,7 @@ function DrawAdvisoryTableFooter(){
     PrintFColour "$PkgClr" "$1$SpChr"
     printf "advisory can be found at:$SpChr"
     PrintFColour "$HypLnk" "$PckgIssue$1"
-    printf "%$LineEnd""s"
+    printf '%'"$LineEnd"'s'
     PrintFBoxEdge
     PrintFNewline
     DrawBoxBottomLine
@@ -833,12 +834,12 @@ function ParseArchAudit() {
     arch-audit | \
     ( # Because of the  pipe, we need a sub shell to preserve variables for processing outside while loop
     while read PckgAdvisory; do
-        UpDateFlag=""                                       # Will hold update string, if available
-        PckgName=${PckgAdvisory%" is affected by ["*}       # Chop string to isolate the package name
+        UpDateFlag=""                                           # Will hold update string, if available
+        PckgName=${PckgAdvisory%"$SpChr""is affected by ["*}        # Chop string to isolate the package name
         PckgName=${PckgName#"Package "*}
-        PckgRisk="$(echo $PckgAdvisory | cut -d'.' -f2)"    # For unknown reasons, ${string#"]. "*} didn't work?
-        if [[ "$PckgRisk" == *" Update to "* ]] ; then
-            UpDateFlag=">>$(echo $PckgAdvisory | cut -d'!' -f2)"   # Create update string. (No update = empty string.)
+        PckgRisk="$(echo $PckgAdvisory | cut -d'.' -f2)"        # For unknown reasons, ${string#"]. "*} didn't work?
+        if [[ "$PckgRisk" == *"$SpChr""Update to""$SpChr"* ]] ; then
+            UpDateFlag=">>$(echo $PckgAdvisory | cut -d'!' -f2)"    # Create update string. (No update = empty string.)
             PckgRisk="$SpChr$(echo $PckgRisk | cut -d'!' -f1)!"     # Remove update string, if it exists, from $PckgRisk
         fi
         #
@@ -883,7 +884,7 @@ function ParseArchAudit() {
             ( # Create second sub-shell to preserve variables for processing outside piped while loop
             GetTrueAppCounts # From file
             Column="0"
-            PckgAppCount="0"  #keeps count of number of applications affected by package cf AppCount
+            PckgAppCount="0"  #keeps count of number of applications affected by package (cf AppCount)
             while read AppNme; do
                 if [[ "$AppNme" == *"Packages that depend on"* ]] ; then
                         # We replaced whoneeds report intro. So, make pretty table header
@@ -910,7 +911,7 @@ function ParseArchAudit() {
                             AppFL="$(echo $AppListRecordOld | cut -d':' -f6)"               # Isolate the 6th field
                             AppFU="$(echo $AppListRecordOld | cut -d':' -f7)"               # Isolate the 7th field
                             ###
-                            case $AppRisk in    ### increment relevant count
+                            case $AppRisk in    ### increment relevant counts
                                     "Low")
                                         AppFL=$((AppFL + 1))
                                         LowAppCountG=$((LowAppCountG + 1))
@@ -931,7 +932,7 @@ function ParseArchAudit() {
                                         AppFU=$((AppFU + 1))
                                         UndefAppCountG=$((UndefAppCountG + 1))
                                         UndefAppCountN=$(IncNetRiskcount ":$AppNme:" "$UndefAppListFile" "$UndefAppCountN");;
-                            esac
+                            esac # End case statement
                             ### Update record in AppListFile
                             AppListRecordNew=":$AppNme:$AppFC:$AppFH:$AppFM:$AppFL:$AppFU"
                             sed -i "s/$AppListRecordOld/$AppListRecordNew/g" "$AppListFile"
@@ -942,11 +943,11 @@ function ParseArchAudit() {
                             if [[ "$Column" == "1" ]]; then
                                     PrintFSpace
                                     PrintFBoxEdge
-                                    printf "$AppClr%-39s" "$SpChr$AppNme"
+                                    PrintFColour "$AppClr" "$SpChr$AppNme" '%-39s'
                                 else if [[ "$Column" == "2" ]]; then
-                                        printf "$AppClr%-38s" "$AppNme"
+                                        PrintFColour "$AppClr" "$SpChr$AppNme" '%-38s'
                                     else
-                                            printf "$AppClr%-39s" "$AppNme"
+                                            PrintFColour "$AppClr" "$SpChr$AppNme" '%-39s'
                                             PrintFBoxEdge
                                             PrintFNewline
                                             Column="0"
@@ -967,7 +968,7 @@ function ParseArchAudit() {
             if [[ $PckgAppCount == "0" ]]; then     # Creates an empty table row when there is no affected applications
                 DrawEmptyLine
             fi
-            # PckgRecord consists of the fields ':PckgName:RiskClr:PckgRsk:SortRisk:PckgAppCount'
+            # PckgRecord consists of the fields ':PckgName:PkgUpDtStatus:RiskClr:PckgRsk:SortRisk:PckgAppCount'
             PckgRecord="$PckgRecord""$PckgAppCount"
             echo $PckgRecord >> "$PckgListFile"
             #
@@ -981,7 +982,8 @@ function ParseArchAudit() {
 }
 
 function StartWhoNeedsReport() {
-    MakeTitleBox "15" "67" "WhoNeeds Report"
+    echo
+    MakeTitleBox "WhoNeeds Report"
     ParseArchAudit
 }
 
