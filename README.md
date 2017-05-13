@@ -54,7 +54,7 @@ If you don't wish to use my PCKGBUILD, then [this](https://bbs.archlinux.org/vie
 
 Primarily, the most important consideration is to check that the file "archaudit-report" has permission to run as an executable. I believe 'chmod 755  archaudit-report’ does the trick, (alternatively you can use your file-manager GUI 😅)
 
-Secondly, git repos are generally works in progress. Rather than clone the project, you should downoad the latest stable release. (See Release History, below, for direct links and sha256 checksums).
+Secondly, git repos are generally works in progress and may be unstable. Usually, it is best practice to downoad the latest stable release. (See Release History, below, for direct links and sha256 checksums).
 
 If your security model permits it, for testing, you can just drop the file into a terminal. For a full installation, (necessary to run ‘archaudit-report’ directly from the command line,) the easiest method is to copy, (as root,) ‘archaudit-report’ into ‘/usr/local/bin/’. Since this directory is already in  $PATH, nothing further should be needed.
 
@@ -90,10 +90,11 @@ For reference, here is how you provide a checksum:
 1. Prepare the release as normal.
 2. Download and verify the tarball
 3. In terminal, enter 'sha256sum < PathToTarball' (or sha1sum, or whatever.)
+4. Copy/Paste result to README.md, (or wherever.)
 
 <br><br>
 ### Release History:
-1. **ArchAudit-Report [v1.02](https://github.com/Irvinehimself/ArchAudit-Report/archive/v1.02.tar.gz)**
+1. **ArchAudit-Report [v1.02](https://github.com/Irvinehimself/ArchAudit-Report/archive/v1.02.tar.gz):**
     * Some minor cosmetic improvements. But, most importantly, it adds "About: Version" to the infobox.
     * Tarball sha256 = **99dbd9ecbed70ab806f0c228e3f3c4968fdd9941cc0faac4209c9959c16ade21**
 1. **ArchAudit-Report [v1.01](https://github.com/Irvinehimself/ArchAudit-Report/archive/v1.01.tar.gz):**
