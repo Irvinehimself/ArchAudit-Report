@@ -275,7 +275,7 @@ function Information() {
     ### Calculate the mid point for version string, (remeber version string is set by my UpdateGit bash)
     AboutNoFormat="About:"
     AbtNFsze=${#AboutNoFormat}
-    AboutVersion="$SpChr""ArchAudit-Report v1.03-rc.02-testing"
+    AboutVersion="$SpChr""ArchAudit-Report v1.04"
     AboutString="$AboutNoFormat$AboutVersion"
     AboutSize=${#AboutString}
     MidStart=$((LineLength-AboutSize))
