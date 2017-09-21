@@ -275,7 +275,7 @@ function Information() {
     ### Calculate the mid point for version string, (remeber version string is set by my UpdateGit bash)
     AboutNoFormat="About:"
     AbtNFsze=${#AboutNoFormat}
-AboutVersion="$SpChr""ArchAudit-Report v1.03-rc.01"
+    AboutVersion="$SpChr""ArchAudit-Report v1.03-rc.02-testing"
     AboutString="$AboutNoFormat$AboutVersion"
     AboutSize=${#AboutString}
     MidStart=$((LineLength-AboutSize))
@@ -715,7 +715,7 @@ function GetSummaryList(){
     SummaryTableFooter
     #
     PrintFColour "$NoteClr" "Note on gross and net counts:" '%34s'
-    printf "%76s\n" "Applications have multiple dependencies. If an applications has two or more"
+    printf '%76s\n' "Applications have multiple dependencies. If an applications has two or more"
     printf '%114s\n' "dependencies with advisories, double counting gives an inflated count of affected applications. Even so, this"
     printf '%114s\n' "'gross' count still contains valuable information. On the other hand, the 'net' count,  which does not double"
     printf '%85s\n' "count, may be considered a true count of applications with inherited advisories."
@@ -837,7 +837,8 @@ function ParseArchAudit() {
         UpDateFlag=""                                           # Will hold update string, if available
         PckgName=${PckgAdvisory%"$SpChr""is affected by ["*}        # Chop string to isolate the package name
         PckgName=${PckgName#"Package "*}
-        PckgRisk="$(echo $PckgAdvisory | cut -d'.' -f2)"        # For unknown reasons, ${string#"]. "*} didn't work?
+        PckgRisk="$(echo $PckgAdvisory | cut -d']' -f2)"        # bug fix for when pckgname has a number eg ffmepg2.8
+        PckgRisk="$(echo $PckgRisk | cut -d'.' -f2)"        # For unknown reasons, ${string#"]. "*} didn't work?
         if [[ "$PckgRisk" == *"$SpChr""Update to""$SpChr"* ]] ; then
             UpDateFlag=">>$(echo $PckgAdvisory | cut -d'!' -f2)"    # Create update string. (No update = empty string.)
             PckgRisk="$SpChr$(echo $PckgRisk | cut -d'!' -f1)!"     # Remove update string, if it exists, from $PckgRisk
