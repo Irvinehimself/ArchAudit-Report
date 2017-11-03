@@ -17,9 +17,9 @@
 
 <br><br>
 ### What is ArchAudit-Report?
-Okay, being honest, this utility is more informative than practical. However, it is very informative!
+While this utility is mainly informative, it presents that information in a way which allows the user to target vulnerable "top-level" applications for additional security. For example, sand-boxing with [Firejail](https://github.com/netblue30/firejail).
 
-As you may know, [arch-audit](https://github.com/ilpianista/arch-audit), is a tool which tells you which packages installed on your system have been issued [security advisories](https://security.archlinux.org/). Unfortunately, the formatting of the arch-audit output is designed to facilitate piping to other auditing tools, (for example Lynis.) For a human, this raw output is neither informative, nor particularly readable.
+More precisely, [arch-audit](https://github.com/ilpianista/arch-audit), is a tool which tells you which packages installed on your system have been issued [security advisories](https://security.archlinux.org/). Unfortunately, the formatting of the arch-audit output is designed to facilitate piping to other auditing tools, (for example Lynis.) For a human, this raw output is neither informative, nor particularly readable.
 
 Written in bash, ‘archaudit-report’ parses the raw output from ‘arch-audit’ and pipes it to 'whoneeds'. Analysing the output from the pipe, it then uses this data to prepare an easy to read, top down look at how the underlying advisories affect your applications.
 
