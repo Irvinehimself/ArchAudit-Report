@@ -275,7 +275,7 @@ function Information() {
     ### Calculate the mid point for version string, (remeber version string is set by my UpdateGit bash)
     AboutNoFormat="About:"
     AbtNFsze=${#AboutNoFormat}
-    AboutVersion="$SpChr""ArchAudit-Report v1.04"
+    AboutVersion="$SpChr""ArchAudit-Report v1.05"
     AboutString="$AboutNoFormat$AboutVersion"
     AboutSize=${#AboutString}
     MidStart=$((LineLength-AboutSize))
@@ -835,10 +835,10 @@ function ParseArchAudit() {
     ( # Because of the  pipe, we need a sub shell to preserve variables for processing outside while loop
     while read PckgAdvisory; do
         UpDateFlag=""                                           # Will hold update string, if available
-        PckgName=${PckgAdvisory%"$SpChr""is affected by ["*}        # Chop string to isolate the package name
+        PckgName=${PckgAdvisory%"$SpChr""is affected by "*}        # Chop string to isolate the package name
         PckgName=${PckgName#"Package "*}
-        PckgRisk="$(echo $PckgAdvisory | cut -d']' -f2)"        # bug fix for when pckgname has a number eg ffmepg2.8
-        PckgRisk="$(echo $PckgRisk | cut -d'.' -f2)"        # For unknown reasons, ${string#"]. "*} didn't work?
+        PckgRisk=${PckgAdvisory#*"is affected by "}        # bug fix for when pckgname has a number eg ffmepg2.8
+        PckgRisk="$(echo $PckgRisk | cut -d'.' -f2)"
         if [[ "$PckgRisk" == *"$SpChr""Update to""$SpChr"* ]] ; then
             UpDateFlag=">>$(echo $PckgAdvisory | cut -d'!' -f2)"    # Create update string. (No update = empty string.)
             PckgRisk="$SpChr$(echo $PckgRisk | cut -d'!' -f1)!"     # Remove update string, if it exists, from $PckgRisk
