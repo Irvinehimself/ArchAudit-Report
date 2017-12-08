@@ -94,6 +94,9 @@ For reference, here is how you provide a checksum:
 
 <br><br>
 ### Release History:
+1. **ArchAudit-Report [v1.05](https://github.com/Irvinehimself/ArchAudit-Report/archive/1.05.tar.gz):**
+    * Minor bug fix to "Updated to  new arch-audit format"
+    * Tarball sha256 = **90c80802e0a21d4f948348433e43895863e513f568719ee8cdb81059e425322d**
 1. **ArchAudit-Report [v1.04](https://github.com/Irvinehimself/ArchAudit-Report/archive/v1.04.tar.gz):**
     * Minor bug fix to "About: version"
     * Tarball sha256 = **710e86f6421268c84c6c40101d21317addbbeead7aa237a599f688f8a3e09a43**
